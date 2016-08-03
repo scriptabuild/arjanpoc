@@ -1,0 +1,9 @@
+[
+	{
+		"projectId": "1",
+		"projectName": "Demo project",
+		"buildProcess": {
+			"repo": "https://github.com/scriptabuild/aspnet+angular+template/"
+		}
+	}
+]

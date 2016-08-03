@@ -23,12 +23,9 @@
   "bugs": {
     "url": "https://github.com/scriptabuild/arjanpoc/issues"
   },
-<<<<<<< HEAD
   "homepage": "https://github.com/scriptabuild/arjanpoc#readme",
   "devDependencies": {
+    "body-parser": "^1.15.2",
     "express": "^4.14.0"
   }
-=======
-  "homepage": "https://github.com/scriptabuild/arjanpoc#readme"
->>>>>>> 5a14a728e978ea6a780c0dff26dba4e85f4d5171
 }
