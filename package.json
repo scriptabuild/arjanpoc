@@ -1,0 +1,27 @@
+{
+  "name": "scriptabuild",
+  "version": "0.1.0",
+  "description": "The scripted CI system",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/scriptabuild/arjanpoc.git"
+  },
+  "keywords": [
+    "Continous",
+    "Integration",
+    "Build",
+    "Deploy",
+    "Developer",
+    "Tools"
+  ],
+  "author": "Arjan Einbu",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/scriptabuild/arjanpoc/issues"
+  },
+  "homepage": "https://github.com/scriptabuild/arjanpoc#readme"
+}
