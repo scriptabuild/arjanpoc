@@ -1,9 +1,38 @@
 [
 	{
-		"projectId": "1",
-		"projectName": "Demo project",
-		"buildProcess": {
-			"repo": "https://github.com/scriptabuild/aspnet+angular+template/"
-		}
+		"id": "1",
+		"name": "Oktaset CFP Self Service",
+		"hook": "",
+		"source": {
+			"type": "git",
+			"location": "https://github.com/scriptabuild/samples.git"
+		},
+		"before": ["npm update"],
+		"run": ["build-node-app.js"],
+		"after": []
+	},
+	{
+		"id": "2",
+		"name": "Oktaset CFP Admin",
+		"hook": "",
+		"source": {
+			"type": "git",
+			"location": "https://github.com/scriptabuild/samples.git"
+		},
+		"before": ["npm update"],
+		"run": ["build-node-app.js"],
+		"after": []
+	},
+	{
+		"id": "3",
+		"name": ".NET Core playground",
+		"hook": "",
+		"source": {
+			"type": "git",
+			"location": "https://github.com/scriptabuild/samples.git"
+		},
+		"before": [],
+		"run": ["build-cs-app.js"],
+		"after": []
 	}
 ]
