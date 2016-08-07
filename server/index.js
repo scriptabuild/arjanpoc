@@ -10,12 +10,7 @@ app.post("github-hook",
 
 		var postdata = req.body;
 
-		// look up project in config.json
-		// clone buildprocess-repo to sandbox (if not exists)
-		// EXEC builprocess ("node build.js") Setup stdin, stdout and stderr
-		//   create workspace (if not exists)
-		//   load deps (nuget/npm etc.)
-		//   run .js in workspace
+		// Run build process...
 	}
 );
 

@@ -24,7 +24,7 @@ Q()
     .then(execute({cmd: "npm", args: ['update']}, { cwd: buildscriptsDirectory }, transformFunc))
     .then(log("So far so good!"))
     .then(ensureFolderExists(buildDirectory))
-    .then(execute(project.run, { cwd: buildDirectory }, transformFunc))
+    .then(execute(project.run, { }, transformFunc))
     .then(log("DONE!!!"));
 
 
