@@ -17,9 +17,9 @@ function _if(condition, trueFunc, falseFunc) {
     return function () {
         return Q(condition).then(function (res) {
             if (res) {
-                return trueFunc ? trueFunc(): undefined;
+                return trueFunc ? trueFunc() : undefined;
             }
-            return falseFunc ? falseFunc(): undefined;
+            return falseFunc ? falseFunc() : undefined;
         });
     };
 }
@@ -49,33 +49,56 @@ function ensureFolderExists(path, mask) {
     }
 }
 
-function execute(task, transformFunc = obj => obj) {
+function execute(tasks, transformFunc = obj => obj) {
     return function () {
-        if (Array.isArray(task)) {
-
-            var p = Q();
-            for (var t of task) {
-                p = p.then(execute(t, transformFunc));
+        if (Array.isArray(tasks)) {
+            let pChain = Q();
+            for (let task of tasks) {
+                var fn = getFunction(task, transformFunc);
+                pChain = pChain.then(fn);
             }
-            return p;
+            return pChain;
         }
+        else {
+            var fn = getFunction(tasks, transformFunc);
+            return fn();
+        }
+    }
+}
 
+function getFunction(task, transformFunc) {
+    task = transformFunc(task);
+    let {cmd, args, options} = resolveParams(task);
+    options = options || {};
+    if(!options.cwd){
+        options.cwd = transformFunc("%build%");
+    }
+    return runSpawn(cmd, args, options);
+}
+
+function resolveParams(task) {
+    if (typeof task == "string") {
+        var args = spawnargs(task);
+
+        task = {
+            cmd: _.head(args),
+            args: _.tail(args)
+        };
+        return task;
+    }
+
+    return task;
+}
+
+function runSpawn(cmd, args, options) {
+    return function () {
         return Q.promise(function (resolve, reject, notify) {
-            if (typeof task == "string") {
-                var args = spawnargs(task);
 
-                task = {
-                    cmd: _.head(args),
-                    args: _.tail(args)
-                };
-            }
-
-            task = transformFunc(task);
             console.info("┏━━━━ Starting external process");
-            console.info("┃ ", task);
+            console.info("┃ ", cmd, args, options);
 
-            let cwd = task.cwd || transformFunc("%build%");
-            const proc = spawn(task.cmd, task.args, {cwd});
+            // let cwd = task.cwd || transformFunc("%build%");
+            const proc = spawn(cmd, args, options);
 
             proc.stdout.on('data', data => {
                 // TODO: This should go to log file

@@ -44,8 +44,8 @@ Q()
     .then(_if(isDirectory(trans("%scripts%/.git")),
         undefined,
         execute({ cmd: "git", args: ['clone', project.source.location, "%scripts%"], cwd: "%sandbox%" }, trans)))
-    .then(execute({ cmd: "git", args: ['pull'], cwd: "%scripts%" }, trans))
-    .then(execute({ cmd: "git", args: ['checkout', 'HEAD'], cwd: "%scripts%" }, trans))
+    .then(execute({ cmd: "git", args: ['pull'], options:{cwd: "%scripts%" }}, trans))
+    .then(execute({ cmd: "git", args: ['checkout', 'HEAD'], options:{cwd: "%scripts%" }}, trans))
 
     .then(log("Starting buildscript"))
     // .then(execute({ cmd: "npm", args: ['update'], cwd: buildscriptsDirectory }, trans))
