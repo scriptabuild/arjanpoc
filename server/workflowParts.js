@@ -1,42 +1,27 @@
 const fs = require("fs");
 const {spawn} = require('child_process');
+const spawnargs = require('spawn-args');
 const Q = require("q");
+const _ = require("lodash");
 
 
-function transform(orig, dictionary, depth) {
-    if (orig !== null
-        && typeof orig !== "object"
-        && typeof (orig) !== "function"
-    ) return replace(orig, dictionary);
-
-    // Make the copy share the same prototype as the original
-    var copy = new orig.constructor();
-
-    // Copy every enumerable property not from the prototype
-    for (var key in orig) {
-        if (orig.hasOwnProperty(key)) {
-            if (depth === undefined || depth > 0) {
-                copy[key] = transform(orig[key], dictionary, depth === undefined ? undefined : depth - 1);
-            }
-            else {
-                copy[key] = orig[key];
-            }
-        }
-    }
-
-    return copy;
-}
-
-function replace(s, dictionary) {
-    return s.replace(/%(.*?)%/g, function (a, b) {
-        return dictionary[b];
-    });
-}
 
 function log(...objects) {
     return function () {
         console.log(...objects);
     }
+}
+
+
+function _if(condition, trueFunc, falseFunc) {
+    return function () {
+        return Q(condition).then(function (res) {
+            if (res) {
+                return trueFunc ? trueFunc(): undefined;
+            }
+            return falseFunc ? falseFunc(): undefined;
+        });
+    };
 }
 
 function ensureFolderExists(path, mask) {
@@ -64,34 +49,33 @@ function ensureFolderExists(path, mask) {
     }
 }
 
-function ensureGitCommit(sourceUrl, destPath, sandboxDirectory, commit, transformFunc) {
-    // clone or pull
-    // checkout to correct commit
-    // .then(execute({ cmd: "git", args: ['-C', 'scripts', 'pull', '||', 'git', 'clone', project.source.location, "%scripts%"] }, { cwd: sandboxDirectory }, transformFunc))
-
-    return Q()
-        .then(execute({ cmd: "git", args: ['clone', sourceUrl, destPath] }, { cwd: sandboxDirectory }, transformFunc))
-        .catch(execute({ cmd: "git", args: ['pull'] }, { cwd: destPath }, transformFunc))
-        .then(execute({ cmd: "git", args: ['checkout', commit] }, { cwd: destPath }, transformFunc))
-
-}
-
-function execute(task, options, transformFunc = obj => obj) {
+function execute(task, transformFunc = obj => obj) {
     return function () {
         if (Array.isArray(task)) {
 
             var p = Q();
             for (var t of task) {
-                p = p.then(execute(t, options, transformFunc));
+                p = p.then(execute(t, transformFunc));
             }
             return p;
         }
 
         return Q.promise(function (resolve, reject, notify) {
+            if (typeof task == "string") {
+                var args = spawnargs(task);
+
+                task = {
+                    cmd: _.head(args),
+                    args: _.tail(args)
+                };
+            }
+
             task = transformFunc(task);
             console.info("┏━━━━ Starting external process");
-            console.info("┃ ", task, options);
-            const proc = spawn(task.cmd, task.args, options);
+            console.info("┃ ", task);
+
+            let cwd = task.cwd || transformFunc("%build%");
+            const proc = spawn(task.cmd, task.args, {cwd});
 
             proc.stdout.on('data', data => {
                 // TODO: This should go to log file
@@ -120,10 +104,10 @@ function execute(task, options, transformFunc = obj => obj) {
     }
 }
 
+
 module.exports = {
+    log,
+    _if,
     ensureFolderExists,
-    ensureGitCommit,
-    execute,
-    transform,
-    log
+    execute
 };

@@ -9,17 +9,15 @@
 		},
 		"run": [
 			{
-				"cmd": "sh",
+				"cmd": "npm",
 				"args": [
-					"%scripts%/batchfile"
-				]
+					"update"
+				],
+				"cwd": "%scripts%"
 			},
-			{
-				"cmd": "node",
-				"args": [
-					"%scripts%/build-node-app.js"
-				]
-			}
+			"npm update",
+			"sh %scripts%/batchfile",
+			"node %scripts%/build-node-app.js"
 		]
 	},
 	{
@@ -31,18 +29,8 @@
 			"location": "https://github.com/scriptabuild/samples.git"
 		},
 		"run": [
-			{
-				"cmd": "npm",
-				"args": [
-					"update"
-				]
-			},
-			{
-				"cmd": "node",
-				"args": [
-					"%scripts%/build-node-app.js"
-				]
-			}
+			"npm update",
+			"node %scripts%/build-node-app.js"
 		]
 	},
 	{
