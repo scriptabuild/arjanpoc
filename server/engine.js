@@ -1,21 +1,15 @@
 const fs = require("fs");
-const spawn = require('child_process').spawn;
+const {spawn} = require('child_process');
 const Q = require("q");
 
 
-// --- Building blocks for async build processes --- //
-
-
-
 function transform(orig, dictionary, depth) {
-
-    // Value types are already copies here, so they don't need to be cloned.
     if (orig !== null
         && typeof orig !== "object"
         && typeof (orig) !== "function"
     ) return replace(orig, dictionary);
 
-    // Make the clone share the same prototype as the original
+    // Make the copy share the same prototype as the original
     var copy = new orig.constructor();
 
     // Copy every enumerable property not from the prototype
@@ -70,7 +64,19 @@ function ensureFolderExists(path, mask) {
     }
 }
 
-function execute(task, options, transformFunc) {
+function ensureGitCommit(sourceUrl, destPath, sandboxDirectory, commit, transformFunc) {
+    // clone or pull
+    // checkout to correct commit
+    // .then(execute({ cmd: "git", args: ['-C', 'scripts', 'pull', '||', 'git', 'clone', project.source.location, "%scripts%"] }, { cwd: sandboxDirectory }, transformFunc))
+
+    return Q()
+        .then(execute({ cmd: "git", args: ['clone', sourceUrl, destPath] }, { cwd: sandboxDirectory }, transformFunc))
+        .catch(execute({ cmd: "git", args: ['pull'] }, { cwd: destPath }, transformFunc))
+        .then(execute({ cmd: "git", args: ['checkout', commit] }, { cwd: destPath }, transformFunc))
+
+}
+
+function execute(task, options, transformFunc = obj => obj) {
     return function () {
         if (Array.isArray(task)) {
 
@@ -89,13 +95,13 @@ function execute(task, options, transformFunc) {
 
             proc.stdout.on('data', data => {
                 // TODO: This should go to log file
-                console.log(`stdout: ${data}`);
+                // console.log(`stdout: ${data}`);
             });
 
             var message = "";
             proc.stderr.on('data', data => {
                 // TODO: This should go to log file
-                console.log(`stderr: ${data}`);
+                // console.log(`stderr: ${data}`);
                 message += data;
 
             });
@@ -116,6 +122,7 @@ function execute(task, options, transformFunc) {
 
 module.exports = {
     ensureFolderExists,
+    ensureGitCommit,
     execute,
     transform,
     log
