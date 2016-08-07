@@ -9,7 +9,7 @@ var project = projects[0];
 var sandboxDirectory = config.workspaces + "/" + project.name;
 var buildscriptsDirectory = sandboxDirectory + "/scripts";
 var buildDirectory = sandboxDirectory + "/build";
-var dictionary = {scripts: buildscriptsDirectory, build: buildDirectory};
+var dictionary = { scripts: buildscriptsDirectory, build: buildDirectory };
 var transformFunc = obj => transform(obj, dictionary, 5);
 
 Q()
@@ -19,17 +19,26 @@ Q()
     .then(log("Setting up sandbox for project", project))
     .then(ensureFolderExists(sandboxDirectory))
     .then(log("Downloading scripts", project))
-    .then(execute({cmd: "git", args: ['clone', project.source.location, "%scripts%"]}, { cwd: sandboxDirectory }, transformFunc))
+// --- begin git stuff
+    // .then(execute({ cmd: "git", args: ['-C', 'scripts', 'pull', '||', 'git', 'clone', project.source.location, "%scripts%"] }, { cwd: sandboxDirectory }, transformFunc))
+    // .then(execute({ cmd: "git", args: ['clone', project.source.location, "%scripts%"] }, { cwd: sandboxDirectory }, transformFunc))
+    .then(execute({ cmd: "git", args: ['pull'] }, { cwd: buildscriptsDirectory }, transformFunc))
+    .then(execute({ cmd: "git", args: ['checkout', 'HEAD'] }, { cwd: buildscriptsDirectory }, transformFunc))
+// --- end git stuff
     .then(log("Downloading dependencies for script", project))
-    .then(execute({cmd: "npm", args: ['update']}, { cwd: buildscriptsDirectory }, transformFunc))
+    .then(execute({ cmd: "npm", args: ['update'] }, { cwd: buildscriptsDirectory }, transformFunc))
     .then(log("So far so good!"))
     .then(ensureFolderExists(buildDirectory))
-    .then(execute(project.run[0], { cwd: buildDirectory }, transformFunc))
-    .then(log("DONE!!!"));
+    .then(execute(project.run, { cwd: buildDirectory }, transformFunc))
+    .then(log("Scripts completed successfully"))
+    .catch(err => console.error("Scripts failed", err));
 
 
 
-// Building blocks for async build processes
+// --- Building blocks for async build processes --- //
+
+
+
 function transform(orig, dictionary, depth) {
 
     // Value types are already copies here, so they don't need to be cloned.
@@ -70,17 +79,21 @@ function log(...objects) {
 
 function ensureFolderExists(path, mask) {
     return function () {
-        console.info("┏━━ Creating folder", path);
+        console.info("┏━━━━ Creating folder");
+        console.info("┃ ", path);
         return Q.promise(function (resolve, reject, progress) {
             if (mask == undefined) {
                 mask = 0777;
             }
             fs.mkdir(path, mask, function (err) {
-                if (err && err.code != "EEXIST") {
-                    console.error("┗━━ Failed at creating folder", path);
+                if (err && err.code == "EEXIST") {
+                    console.info("┗━━━━ Folder already exists");
+                    resolve(err);
+                } else if (err) {
+                    console.error("┗━━━━ Failed at creating folder");
                     reject(err);
                 } else {
-                    console.info("┗━━ Created folder", path);
+                    console.info("┗━━━━ Created folder");
                     resolve(path);
                 }
             });
@@ -91,9 +104,19 @@ function ensureFolderExists(path, mask) {
 
 function execute(task, options, transformFunc) {
     return function () {
+        if (Array.isArray(task)) {
+
+            var p = Q();
+            for (var t of task) {
+                p = p.then(execute(t, options, transformFunc));
+            }
+            return p;
+        }
+
         return Q.promise(function (resolve, reject, notify) {
             task = transformFunc(task);
-            console.info("┏━━ Starting external process", task, options);
+            console.info("┏━━━━ Starting external process");
+            console.info("┃ ", task, options);
             const proc = spawn(task.cmd, task.args, options);
 
             proc.stdout.on('data', data => {
@@ -101,14 +124,22 @@ function execute(task, options, transformFunc) {
                 console.log(`stdout: ${data}`);
             });
 
+            var message = "";
             proc.stderr.on('data', data => {
                 // TODO: This should go to log file
                 console.log(`stderr: ${data}`);
+                message += data;
+
             });
 
             proc.on('close', code => {
-                console.log(`┗━━ Child process exited with code ${code}`, task, options);
-                resolve(code);
+                if (code == 0) {
+                    console.log(`┗━━━━ Child process exited with code ${code}`);
+                    resolve(code);
+                } else {
+                    console.error(`┗━━━━ Child process exited with code ${code}`);
+                    reject({ name: "ChildProcessError", message, code });
+                }
             });
 
         });

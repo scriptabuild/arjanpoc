@@ -7,9 +7,20 @@
 			"type": "git",
 			"location": "https://github.com/scriptabuild/samples.git"
 		},
-		"before": [ { "cmd": "npm", "args": ["update"] } ],
-		"run": [ { "cmd": "node", "args": ["%scripts%/build-node-app.js"] } ],
-		"after": []
+		"run": [
+			{
+				"cmd": "sh",
+				"args": [
+					"%scripts%/batchfile"
+				]
+			},
+			{
+				"cmd": "node",
+				"args": [
+					"%scripts%/build-node-app.js"
+				]
+			}
+		]
 	},
 	{
 		"id": "2",
@@ -19,9 +30,20 @@
 			"type": "git",
 			"location": "https://github.com/scriptabuild/samples.git"
 		},
-		"before": [ { "cmd": "npm", "args": ["update"] } ],
-		"run": [ { "cmd": "node", "args": ["%scripts%/build-node-app.js"] } ],
-		"after": []
+		"run": [
+			{
+				"cmd": "npm",
+				"args": [
+					"update"
+				]
+			},
+			{
+				"cmd": "node",
+				"args": [
+					"%scripts%/build-node-app.js"
+				]
+			}
+		]
 	},
 	{
 		"id": "3",
@@ -31,9 +53,14 @@
 			"type": "git",
 			"location": "https://github.com/scriptabuild/samples.git"
 		},
-		"before": [],
-		"run": [ { "cmd": "node", "args": ["%scripts%/build-cs-app.js"] } ],
-		"after": []
+		"run": [
+			{
+				"cmd": "node",
+				"args": [
+					"%scripts%/build-cs-app.js"
+				]
+			}
+		]
 	},
 	{
 		"id": "4",
@@ -43,8 +70,11 @@
 			"type": "git",
 			"location": "https://github.com/scriptabuild/samples.git"
 		},
-		"before": [],
-		"run": [ { "cmd": "$scripts$/batchfile", "args": [] } ],
-		"after": []
+		"run": [
+			{
+				"cmd": "$scripts$/batchfile",
+				"args": []
+			}
+		]
 	}
 ]
