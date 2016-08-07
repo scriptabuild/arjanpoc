@@ -1,3 +1,5 @@
 {
-	// "logPath": "/"
+	"root": "/Users/arjan/Documents/temp/scriptabuild",
+	"logs": "/Users/arjan/Documents/temp/scriptabuild/logs",
+	"workspaces": "/Users/arjan/Documents/temp/scriptabuild/workspaces"
 }

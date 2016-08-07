@@ -1,14 +1,14 @@
 [
 	{
 		"id": "1",
-		"name": "Oktaset CFP Self Service",
+		"name": "Oktaset_CFP_Self_Service",
 		"hook": "",
 		"source": {
 			"type": "git",
 			"location": "https://github.com/scriptabuild/samples.git"
 		},
-		"before": ["npm update"],
-		"run": ["build-node-app.js"],
+		"before": [ { "cmd": "npm", "args": ["update"] } ],
+		"run": [ { "cmd": "node", "args": ["%scripts%/build-node-app.js"] } ],
 		"after": []
 	},
 	{
@@ -19,8 +19,8 @@
 			"type": "git",
 			"location": "https://github.com/scriptabuild/samples.git"
 		},
-		"before": ["npm update"],
-		"run": ["build-node-app.js"],
+		"before": [ { "cmd": "npm", "args": ["update"] } ],
+		"run": [ { "cmd": "node", "args": ["%scripts%/build-node-app.js"] } ],
 		"after": []
 	},
 	{
@@ -32,7 +32,19 @@
 			"location": "https://github.com/scriptabuild/samples.git"
 		},
 		"before": [],
-		"run": ["build-cs-app.js"],
+		"run": [ { "cmd": "node", "args": ["%scripts%/build-cs-app.js"] } ],
+		"after": []
+	},
+	{
+		"id": "4",
+		"name": "Built by shell script project",
+		"hook": "",
+		"source": {
+			"type": "git",
+			"location": "https://github.com/scriptabuild/samples.git"
+		},
+		"before": [],
+		"run": [ { "cmd": "$scripts$/batchfile", "args": [] } ],
 		"after": []
 	}
 ]
