@@ -54,19 +54,19 @@ function execute(tasks, transformFunc = obj => obj) {
         if (Array.isArray(tasks)) {
             let pChain = Q();
             for (let task of tasks) {
-                var fn = getFunction(task, transformFunc);
+                var fn = getPreparedExecSpawnFunction(task, transformFunc);
                 pChain = pChain.then(fn);
             }
             return pChain;
         }
         else {
-            var fn = getFunction(tasks, transformFunc);
+            var fn = getPreparedExecSpawnFunction(tasks, transformFunc);
             return fn();
         }
     }
 }
 
-function getFunction(task, transformFunc) {
+function getPreparedExecSpawnFunction(task, transformFunc) {
     task = transformFunc(task);
     let {cmd, args, options} = resolveParams(task);
     options = options || {};
@@ -76,6 +76,7 @@ function getFunction(task, transformFunc) {
     return runSpawn(cmd, args, options);
 }
 
+// task can be either a string or an object. This function transforms the task to a params object.
 function resolveParams(task) {
     if (typeof task == "string") {
         var args = spawnargs(task);
