@@ -4,8 +4,8 @@
 		"name": "Oktaset_CFP_Self_Service",
 		"hook": "",
 		"source": {
-			"type": "git",
-			"location": "https://github.com/scriptabuild/samples.git"
+			"provider": "git",
+			"url": "https://github.com/scriptabuild/samples.git"
 		},
 		"run": [
 			{
@@ -25,8 +25,8 @@
 		"name": "Oktaset CFP Admin",
 		"hook": "",
 		"source": {
-			"type": "git",
-			"location": "https://github.com/scriptabuild/samples.git"
+			"provider": "git",
+			"url": "https://github.com/scriptabuild/samples.git"
 		},
 		"run": [
 			"npm update",
@@ -38,8 +38,8 @@
 		"name": ".NET Core playground",
 		"hook": "",
 		"source": {
-			"type": "git",
-			"location": "https://github.com/scriptabuild/samples.git"
+			"provider": "filesystem",
+			"path": "/users/arjan/Document/dev/oktaset-cfp-admin"
 		},
 		"run": [
 			{
@@ -55,8 +55,8 @@
 		"name": "Built by shell script project",
 		"hook": "",
 		"source": {
-			"type": "git",
-			"location": "https://github.com/scriptabuild/samples.git"
+			"provider": "git",
+			"url": "https://github.com/scriptabuild/samples.git"
 		},
 		"run": [
 			{

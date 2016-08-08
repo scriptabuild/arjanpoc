@@ -4,13 +4,15 @@ var bodyparser = require("body-parser");
 
 var app = express();
 
+// 1. boot the server -> create folders and set up hooks endpoint
+
 app.post("github-hook",
 	bodyparser.json(),
 	function(req, resp) {
 
 		var postdata = req.body;
 
-		// Run build process...
+		// 2. create workspace, checkout build script, run build script...
 	}
 );
 

@@ -2,6 +2,8 @@ const fs = require("fs");
 const Q = require("q");
 // const _ = require("lodash");
 
+const globs = require("./globs");
+
 
 function transform(orig, dictionary, depth) {
     if (orig !== null

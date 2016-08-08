@@ -4,11 +4,14 @@ const spawnargs = require('spawn-args');
 const Q = require("q");
 const _ = require("lodash");
 
+const globs = require("./globs");
+
 
 
 function log(...objects) {
     return function () {
         console.log(...objects);
+        globs.logger.log('info', ...objects);
     }
 }
 
@@ -26,6 +29,8 @@ function _if(condition, trueFunc, falseFunc) {
 
 function ensureFolderExists(path, mask) {
     return function () {
+        globs.logger.log('info', `ensureFolderExist(${path})`);
+
         console.info("┏━━━━ Creating folder");
         console.info("┃ ", path);
         return Q.promise(function (resolve, reject, progress) {
@@ -35,11 +40,14 @@ function ensureFolderExists(path, mask) {
             fs.mkdir(path, mask, function (err) {
                 if (err && err.code == "EEXIST") {
                     console.info("┗━━━━ Folder already exists");
+                    globs.logger.log('info', `${path} already exists`);
                     resolve(err);
                 } else if (err) {
                     console.error("┗━━━━ Failed at creating folder");
+                    globs.logger.log('error', `creating ${path} failed`);
                     reject(err);
                 } else {
+                    globs.logger.log('info', `${path} created successfully`);
                     console.info("┗━━━━ Created folder");
                     resolve(path);
                 }
@@ -70,7 +78,7 @@ function getPreparedExecSpawnFunction(task, transformFunc) {
     task = transformFunc(task);
     let {cmd, args, options} = resolveParams(task);
     options = options || {};
-    if(!options.cwd){
+    if (!options.cwd) {
         options.cwd = transformFunc("%build%");
     }
     return runSpawn(cmd, args, options);
@@ -98,28 +106,31 @@ function runSpawn(cmd, args, options) {
             console.info("┏━━━━ Starting external process");
             console.info("┃ ", cmd, args, options);
 
-            // let cwd = task.cwd || transformFunc("%build%");
+            globs.logger.log('info', `Spawning process: ${cmd} ${args.join(" ")}, options: ${JSON.stringify(options)}`);
+
             const proc = spawn(cmd, args, options);
 
             proc.stdout.on('data', data => {
-                // TODO: This should go to log file
                 // console.log(`stdout: ${data}`);
+                globs.logger.log('verbose', `${data}`);
             });
 
             var message = "";
             proc.stderr.on('data', data => {
-                // TODO: This should go to log file
                 // console.log(`stderr: ${data}`);
-                message += data;
+                globs.logger.log('warn', `${data}`);
 
+                message += data;
             });
 
             proc.on('close', code => {
                 if (code == 0) {
                     console.log(`┗━━━━ Child process exited with code ${code}`);
+                    globs.logger.log('info', `Child process exited with code ${code}`);                
                     resolve(code);
                 } else {
                     console.error(`┗━━━━ Child process exited with code ${code}`);
+                    globs.logger.log('error', `Child process exited with code ${code}`);                
                     reject({ name: "ChildProcessError", message, code });
                 }
             });
