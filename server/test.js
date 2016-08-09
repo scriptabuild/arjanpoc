@@ -8,6 +8,7 @@ const {
     isFile,
     isDirectory
 } = require("./utils")
+const loadFromGit = require("./blocks/loadFromGit");
 const winston = require("winston");
 
 
@@ -48,11 +49,12 @@ Q()
     .then(createFolder(build))
 
     .then(log("Loading buildscripts into sandbox"))
-    // .then(ensureDownloadResource(project.source))
-    .then(_if(isDirectory(transFn("%scripts%/.git")),
-        executeTask({ cmd: "git", args: ['pull'], options: { cwd: "%scripts%" } }, transFn),
-        executeTask({ cmd: "git", args: ['clone', project.source.url, "%scripts%"], cwd: "%sandbox%" }, transFn)))
-    .then(executeTask({ cmd: "git", args: ['checkout', 'HEAD'], options: { cwd: "%scripts%" } }, transFn))
+    .then(loadFromGit(project.source, scripts, transFn))
+
+    // .then(_if(isDirectory(transFn("%scripts%/.git")),
+    //     executeTask({ cmd: "git", args: ['pull'], options: { cwd: "%scripts%" } }, transFn),
+    //     executeTask({ cmd: "git", args: ['clone', project.source.url, "%scripts%"], cwd: "%sandbox%" }, transFn)))
+    // .then(executeTask({ cmd: "git", args: ['checkout', 'HEAD'], options: { cwd: "%scripts%" } }, transFn))
 
     .then(log("Starting buildscript"))
     .then(executeTask(project.run, transFn))
