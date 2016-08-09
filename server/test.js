@@ -1,17 +1,14 @@
 const Q = require("q");
-const {
-    ensureFolderExists,
-    execute,
-    log,
-    _if
-} = require("./workflowParts")
+const createFolder = require("./blocks/createFolder");
+const executeTask = require("./blocks/executeTask");
+const log = require("./blocks/log");
+const _if = require("./blocks/_if");
 const {
     transform,
     isFile,
     isDirectory
-} = require("./workflowUtils")
+} = require("./utils")
 const winston = require("winston");
-const globs = require("./globs");
 
 
 const config = require("./config");
@@ -31,35 +28,34 @@ var transFn = obj => transform(obj, paths, 10);
 
 //TODO: Ensure log folder exists
 //TODO: Seperate logs for system and project (per project and timestamp - record timestamp, script commit id, project commit id)
-globs.logger = new winston.Logger({
+var logger = new winston.Logger({
     transports: [
-        new winston.transports.Console(),
-        // new winston.transports.File({ filename: `${config.logs}/${project.name}/logfile.txt` })
+        new winston.transports.Console({ level: "error" }),
+        // new winston.transports.File({ filename: `${config.logs}/${project.name}/logfile.json`, level: "silly"})
     ]
 });
 
+winston.loggers.add("system");
 
 Q()
     .then(log("Starting Scriptabuild"))
-    .then(ensureFolderExists(config.root))
-    .then(ensureFolderExists(config.logs))
-    .then(ensureFolderExists(config.workspaces))
+    .then(createFolder(config.logs))
+    .then(createFolder(config.workspaces))
 
     .then(log("Setting up sandbox for project"))
-    .then(ensureFolderExists(sandbox))
-    .then(ensureFolderExists(scripts))
-    .then(ensureFolderExists(build))
+    .then(createFolder(sandbox))
+    .then(createFolder(scripts))
+    .then(createFolder(build))
 
     .then(log("Loading buildscripts into sandbox"))
     // .then(ensureDownloadResource(project.source))
     .then(_if(isDirectory(transFn("%scripts%/.git")),
-        undefined,
-        execute({ cmd: "git", args: ['clone', project.source.params, "%scripts%"], cwd: "%sandbox%" }, transFn)))
-    .then(execute({ cmd: "git", args: ['pull'], options: { cwd: "%scripts%" } }, transFn))
-    .then(execute({ cmd: "git", args: ['checkout', 'HEAD'], options: { cwd: "%scripts%" } }, transFn))
+        executeTask({ cmd: "git", args: ['pull'], options: { cwd: "%scripts%" } }, transFn),
+        executeTask({ cmd: "git", args: ['clone', project.source.url, "%scripts%"], cwd: "%sandbox%" }, transFn)))
+    .then(executeTask({ cmd: "git", args: ['checkout', 'HEAD'], options: { cwd: "%scripts%" } }, transFn))
 
     .then(log("Starting buildscript"))
-    .then(execute(project.run, transFn))
+    .then(executeTask(project.run, transFn))
     .then(log("Scripts completed successfully"))
     .catch(err => console.error("Scripts failed", err));
 
