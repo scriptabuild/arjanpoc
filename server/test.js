@@ -3,6 +3,7 @@ const createFolder = require("./blocks/createFolder");
 const executeTask = require("./blocks/executeTask");
 const log = require("./blocks/log");
 const _if = require("./blocks/_if");
+const block = require("./blocks/block");
 const {
     transform,
     isFile,
@@ -41,6 +42,7 @@ winston.loggers.add("system");
 Q()
     .then(log("Starting Scriptabuild"))
     .then(createFolder(config.logs))
+    .then(block(() => console.log("HELLO WORLD"), "my custom block"))
     .then(createFolder(config.workspaces))
 
     .then(log("Setting up sandbox for project"))
@@ -49,12 +51,11 @@ Q()
     .then(createFolder(build))
 
     .then(log("Loading buildscripts into sandbox"))
-    .then(loadFromGit(project.source, scripts, transFn))
-
-    // .then(_if(isDirectory(transFn("%scripts%/.git")),
-    //     executeTask({ cmd: "git", args: ['pull'], options: { cwd: "%scripts%" } }, transFn),
-    //     executeTask({ cmd: "git", args: ['clone', project.source.url, "%scripts%"], cwd: "%sandbox%" }, transFn)))
-    // .then(executeTask({ cmd: "git", args: ['checkout', 'HEAD'], options: { cwd: "%scripts%" } }, transFn))
+    // .then(loadFromGit(project.source, sandbox, transFn))
+    .then(_if(isDirectory(transFn("%scripts%/.git")),
+        executeTask({ cmd: "git", args: ['pull'], options: { cwd: "%scripts%" } }, transFn),
+        executeTask({ cmd: "git", args: ['clone', project.source.url, "%scripts%"], cwd: "%sandbox%" }, transFn)))
+    .then(executeTask({ cmd: "git", args: ['checkout', 'HEAD'], options: { cwd: "%scripts%" } }, transFn))
 
     .then(log("Starting buildscript"))
     .then(executeTask(project.run, transFn))

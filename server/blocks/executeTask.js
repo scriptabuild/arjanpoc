@@ -57,18 +57,14 @@ function runSpawn(cmd, args, options) {
             logger.info(`┃ "${cmd} ${args.join(" ")}"`, {options});
             logger.info({ cmd, args, options });
 
-            // logger.log('info', `Spawning process: ${cmd} ${args.join(" ")}, options: ${JSON.stringify(options)}`);
-
             const proc = spawn(cmd, args, options);
 
             proc.stdout.on('data', data => {
-                // console.log(`stdout: ${data}`);
                 logger.info({ stdout: `${data}` });
             });
 
             var message = "";
             proc.stderr.on('data', data => {
-                // console.log(`stderr: ${data}`);
                 logger.info({ stderr: `${data}` });
 
                 message += data;
@@ -77,11 +73,9 @@ function runSpawn(cmd, args, options) {
             proc.on('close', code => {
                 if (code == 0) {
                     logger.info(`┗━━━━ Child process exited with code ${code}`);
-                    // logger.info({code: `${code}`});
                     resolve(code);
                 } else {
                     logger.error(`┗━━━━ Child process exited with code ${code}`);
-                    // logger.error({code: `${code}`});
                     reject({ name: "ChildProcessError", message, code });
                 }
             });

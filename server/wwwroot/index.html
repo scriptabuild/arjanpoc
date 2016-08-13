@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+	<link rel="stylesheet" href="/assets/stylesheet.css">
+</head>
+
+<body>
+	<div id="app">
+
+		<router-view></router-view>
+
+		<br>
+		<span class="prompt">$</span> <span class="cursor">&nbsp;</span><br>
+
+	</div>
+
+
+	<script src="https://cdn.jsdelivr.net/vue/1.0.26/vue.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/vue.router/0.7.10/vue-router.min.js"></script>
+	<script>
+		//-----------
+		var projectListPanel = Vue.extend({
+			template: `
+			<span class="prompt">$</span> scriptabuild status --list<br>
+			<br>
+			<ul>
+				<li v-for="project in projects">
+					<a v-link="{name: 'project-detail', params: { projectName: project.name}}">
+					{{project.name}} <span class="{{project.status}}">{{project.status}}</span>
+					</a>
+				</li>
+			</ul>`,
+			data: function () {
+				return {
+					projects: []
+				}
+			},
+			init: function () {
+				fetch("/project-list")
+					.then(resp => resp.json())
+					.then(projects => this.projects = projects);
+			}
+		});
+
+		// var ProjectListPanel = Vue.component("project-list-panel", projectListPanel);
+		//-----------
+		var projectDetailPanel = Vue.extend({
+			template: `<div class="comment"># Details is not implemented yet</div>`,
+			data: function () {
+				return {
+					project: {}
+				}
+			},
+			init: function () {
+				fetch("/project-detail")
+					.then(resp => resp.json())
+					.then(projects => this.project = project);
+			}
+		});
+
+		// var ProjectDetailPanel = Vue.component("project-detail-panel", projectDetailPanel);
+		//-----------
+		var router = new VueRouter({
+			hashbang: false,
+			history: true,
+			root: "/app"
+		});
+
+		router.map({
+			"/projects/": {
+				name: "projects-list",
+				component: projectListPanel
+			},
+			"/project/:projectName": {
+				name: "project-detail",
+				component: projectDetailPanel
+			}
+		});
+		//-----------
+		router.start({}, "#app");
+	</script>
+</body>
+
+</html>

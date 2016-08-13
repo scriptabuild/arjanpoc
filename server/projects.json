@@ -1,6 +1,5 @@
 [
 	{
-		"id": "1",
 		"name": "Oktaset_CFP_Self_Service",
 		"hook": "",
 		"source": {
@@ -21,7 +20,6 @@
 		]
 	},
 	{
-		"id": "2",
 		"name": "Oktaset CFP Admin",
 		"hook": "",
 		"source": {
@@ -34,7 +32,6 @@
 		]
 	},
 	{
-		"id": "3",
 		"name": ".NET Core playground",
 		"hook": "",
 		"source": {
@@ -51,7 +48,6 @@
 		]
 	},
 	{
-		"id": "4",
 		"name": "Built by shell script project",
 		"hook": "",
 		"source": {
