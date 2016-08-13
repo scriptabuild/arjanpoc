@@ -3,7 +3,7 @@
 
 <head>
 	<meta charset="UTF-8">
-	<title>Document</title>
+	<title>Scriptabuild</title>
 	<link rel="stylesheet" href="/assets/stylesheet.css">
 </head>
 
@@ -48,7 +48,12 @@
 		// var ProjectListPanel = Vue.component("project-list-panel", projectListPanel);
 		//-----------
 		var projectDetailPanel = Vue.extend({
-			template: `<div class="comment"># Details is not implemented yet</div>`,
+			template: `
+			<div class="comment"># Details is not implemented yet</div>
+			<div class="comment"># - link to history with statuses and commit ids (all builds for this project)</div>
+			<div class="comment"># - check if there is a newer commit</div>
+			<div class="comment"># - button to force a new build</div>
+			`,
 			data: function () {
 				return {
 					project: {}
