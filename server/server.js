@@ -22,7 +22,7 @@ app.get("/app*", function (req, resp) {
 app.get("/project-list", cors(), function (req, resp) {
 	const projects = require("./projects");
 
-	resp.json(_(projects).map(p => {return { name: p.name, status: "ok" };}) );
+	resp.json(_(projects).map(p => ({ name: p.name, status: "ok" })).value() );
 });
 
 app.get("/project-detail/:projectName", cors(), function (req, resp) {
@@ -32,11 +32,13 @@ app.get("/project-detail/:projectName", cors(), function (req, resp) {
 			status: "ok",
 			builds: [
 				{
+					branch: "master",
 					commitId: "52b8775",
 					date: "2016-08-01T12:00:00+02:00",
 					status: "ok"
 				},
 				{
+					branch: "master",
 					commitId: "5ace85c",
 					date: "2016-08-01T11:58:22+02:00",
 					status: "failed"

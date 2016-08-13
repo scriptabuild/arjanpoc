@@ -1,27 +1,34 @@
 <template>
 	<span class="prompt">$</span> scriptabuild status --project "{{project.name}}"<br>
 	<br>
-	<div class="comment"># Details is not implemented yet</div>
-	<div class="comment"># - link to history with statuses and commit ids (all builds for this project)</div>
-	<div class="comment"># - check if there is a newer commit</div>
-	<div class="comment"># - button to force a new build</div>
+	Status [<span class="{{project.status}}">{{project.status}}</span>]<br>
+	<br>
+	Latest builds:<br>
+	<ul>
+		<li v-for="build in project.builds">
+			<a v-link="{name: '', params: ''}">
+			(Commit: {{build.commitId}}) [<span class="{{build.status}}">{{build.status}}</span>]
+			</a>
+		</li>
+	</ul>
 </template>
 
 <script>
 	export default {
 		name: "project-detail",
-		data() {
-			return {
-				project: {}
+		data: () => ({
+			project: {
+				name: undefined
 			}
-		},
+		}),
 		init() {
-			fetch(`http://localhost:3000/project-detail/${this.params.projectName}`)
+			fetch(`http://localhost:3000/project-detail/${this.$route.params.projectName}`)
 				.then(resp => resp.json())
-				.then(projects => this.projects = projects);
+				.then(project => this.project = project);
 		}
 	};
 </script>
 
 <style>
+
 </style>

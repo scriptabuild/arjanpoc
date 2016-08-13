@@ -1,15 +1,14 @@
 import Vue from "vue"
 import VueRouter from "vue-router"
-import App from "./App.vue"
 import ProjectList from "./ProjectList.vue"
 import ProjectDetail from "./ProjectDetail.vue"
 
 Vue.use(VueRouter);
 
 var router = new VueRouter({
-  hashbang: false,
-  history: true,
-  root: "/app"
+  // hashbang: false,
+  // history: true,
+  // root: "/app"
 });
 
 router
@@ -23,5 +22,5 @@ router
       component: ProjectDetail
     }
   })
-  // .redirect({ "*": "/projects" })
+  .redirect({ "*": "/projects" })
   .start({}, "body");
