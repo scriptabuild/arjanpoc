@@ -1,0 +1,41 @@
+body{
+	font-family: monospace;
+	font-size: 36px;
+	background-color: black;
+	color: white;
+}
+
+[v-cloak]{
+	display: none;
+}
+:link,
+:visited{
+	color: inherit;
+	text-decoration: none;
+}
+:link:hover{
+	text-decoration: underline;
+}
+
+.prompt{
+	color: #aaa;
+}
+.ok{
+	color: #00ff00;
+}
+.failed{
+	color: #ff0000;
+}
+.cursor{
+	background-color: #666;
+}
+.comment{
+	color: green;
+}
+
+ul{
+	margin-top: 0;
+	margin-bottom: 0;
+	padding-left: 0;
+	list-style: none;
+}

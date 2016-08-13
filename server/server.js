@@ -1,4 +1,5 @@
 const express = require("express");
+const cors = require("cors");
 const exec = require("child_process").exec;
 const bodyparser = require("body-parser");
 const _ = require("lodash");
@@ -8,23 +9,23 @@ const _ = require("lodash");
 
 var app = express();
 
-app.use("/assets", express.static(__dirname + "/wwwroot", { extensions: ["css", "jpg", "png"] }));
+app.use("/app", express.static(__dirname + "/wwwroot", { extensions: ["js", "css", "jpg", "png"] }));
 
 app.get("/", function (req, resp) {
-	resp.redirect("/app");
+	resp.redirect("/app/projects");
 })
 
 app.get("/app*", function (req, resp) {
 	resp.sendFile(__dirname + "/wwwroot/index.html");
 });
 
-app.get("/project-list", function (req, resp) {
+app.get("/project-list", cors(), function (req, resp) {
 	const projects = require("./projects");
 
 	resp.json(_(projects).map(p => {return { name: p.name, status: "ok" };}) );
 });
 
-app.get("/project-detail/:projectName", function (req, resp) {
+app.get("/project-detail/:projectName", cors(), function (req, resp) {
 	let project =
 		{
 			name: "oktaset cfp Self Service",
