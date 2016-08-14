@@ -4,7 +4,7 @@
 	<ul>
 		<li v-for="project in projects">
 			<a v-link="{name: 'project-detail', params: { projectName: project.name}}">
-			{{project.name}} [<span class="{{project.status}}">{{project.status}}</span>]
+			{{project.name}} <span class="{{project.status}}">{{project.status}}</span>
 			</a>
 		</li>
 	</ul>
