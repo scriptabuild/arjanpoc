@@ -15,7 +15,7 @@ var router = new VueRouter({
 
 router
   .map({
-    "/projects/": {
+    "/projects": {
       name: "projects-list",
       component: ProjectList
     },

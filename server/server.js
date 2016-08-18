@@ -22,36 +22,39 @@ app.get("/app*", function (req, resp) {
 app.get("/project-list", cors(), function (req, resp) {
 	const projects = require("./projects");
 
-	resp.json(_(projects).map(p => ({ name: p.name, status: "ok" })).value() );
+	resp.json(_(projects).map(p => ({ name: p.name, status: "ok" })).value());
 });
 
-app.get("/project-detail/:projectName", cors(), function (req, resp) {
-	let project =
-		{
-			name: "oktaset cfp Self Service",
-			status: "ok",
-			builds: [
-				{
-					branch: "master",
-					commitId: "52b8775",
-					date: "2016-08-01T12:00:00+02:00",
-					status: "ok"
-				},
-				{
-					branch: "master",
-					commitId: "5ace85c",
-					date: "2016-08-01T11:58:22+02:00",
-					status: "failed"
-				}
-			]
-		};
+app.get("/project-detail/:projectName",
+	cors(),
+	function (req, resp) {
+		let projectName = req.params.projectName;
+		const projects = require("./projects");
+		let project = _(projects).find({ name: projectName })
 
-	resp.json(project);
-});
+		resp.json(project);
+	});
 
-// app.post("/project-build/:projectName", function(req, resp){
-// 	// Trigger the build. Similar to a webhook
-// });
+// app.use(cors({ allowedOrigins: "*" }));
+app.post("/project-build/:projectName",
+	cors(),
+	// bodyparser,
+	function (req, resp) {
+		let commitId;
+		let branchname;
+		// TODO: Trigger the build. Similar to a webhook
+		// - create or reuse workspace folder(s)
+		// - create build folder (folder name contains timestamp + commitid + branch?)
+		// - set up logging
+		// - git clone/pull + npm update + run scripts
+		// - write end status to file
+
+
+
+
+		console.log("Starting the build for " + req.params.projectName);
+		resp.send("oki!!!");
+	});
 
 // // 1. boot the server -> create folders and set up hooks endpoint
 

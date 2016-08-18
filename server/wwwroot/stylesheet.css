@@ -32,6 +32,19 @@ body{
 .comment{
 	color: green;
 }
+button.link{
+	font-family: inherit;
+	font-size: inherit;
+	background-color:inherit;
+	border: none;
+	color: inherit;
+	padding: 0;
+}
+button.link:hover{
+	text-decoration: underline;
+	cursor: pointer;
+}
+
 
 ul{
 	margin-top: 0;
