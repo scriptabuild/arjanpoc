@@ -11,6 +11,8 @@
 </template>
 
 <script>
+	import Vue from "vue"
+	import _ from "lodash";
 	export default {
 		name: "project-list",
 		data() {
@@ -21,10 +23,16 @@
 		init() {
 			fetch("http://localhost:3000/project-list")
 				.then(resp => resp.json())
-				.then(projects => this.projects = projects);
+				.then(projects => this.projects = projects)
+				.then(() => {
+					for(var k in this.projects){
+						Vue.set(this.projects[k], "status", "unknown");
+					}
+				});
 		}
-	};
+	}
 </script>
 
 <style>
+
 </style>

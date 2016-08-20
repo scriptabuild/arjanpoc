@@ -48,7 +48,7 @@ function execCreateFolder(path, mask) {
                     // logger.info(`┃  "${path}" Failed creating`);
                     reject(err);
                 } else {
-                    logger.info(`┃ "${path}" Created`);
+                    logger.info(`┃ "${path}" created`);
                     resolve(path);
                 }
             });

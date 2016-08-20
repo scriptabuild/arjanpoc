@@ -31,7 +31,9 @@ function replace(s, dictionary) {
     if (typeof s != "string") return s;
 
     return s.replace(/%(.*?)%/g, function (a, b) {
-        return dictionary[b];
+        return dictionary[b] === undefined
+            ? `%${b}%`
+            : dictionary[b];
     });
 }
 

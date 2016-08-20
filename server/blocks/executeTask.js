@@ -55,7 +55,7 @@ function runSpawn(cmd, args, options) {
 
             logger.info("┏━━━━ Starting external process");
             logger.info(`┃ "${cmd} ${args.join(" ")}"`, {options});
-            logger.info({ cmd, args, options });
+            // logger.info({ cmd, args, options });
 
             const proc = spawn(cmd, args, options);
 

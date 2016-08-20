@@ -1,7 +1,20 @@
 [
 	{
-		"name": "Oktaset_CFP_Self_Service",
-		"hook": "",
+		"name": "Arjans Proof of Concept of Script-a-build",
+		"hook": {},
+		"source": {
+			"provider": "git",
+			"url": "https://github.com/scriptabuild/arjanpoc"
+		},
+		"run": [
+			"npm update",
+			"npm run ci-task",
+			"node %scripts%/build-node-app.js"
+		]
+	},
+	{
+		"name": "Oktaset CFP Self Service",
+		"hook": {},
 		"source": {
 			"provider": "git",
 			"url": "https://github.com/scriptabuild/samples.git"
@@ -12,16 +25,16 @@
 				"args": [
 					"update"
 				],
-				"options":{"cwd": "%scripts%"}
+				"options":{"cwd": "%build%"}
 			},
 			"npm update",
-			"sh %scripts%/batchfile",
-			"node %scripts%/build-node-app.js"
+			"sh %build%/batchfile",
+			"node %build%/build-node-app.js"
 		]
 	},
 	{
 		"name": "Oktaset CFP Admin",
-		"hook": "",
+		"hook": {},
 		"source": {
 			"provider": "git",
 			"url": "https://github.com/scriptabuild/samples.git"
@@ -33,7 +46,7 @@
 	},
 	{
 		"name": ".NET Core playground",
-		"hook": "",
+		"hook": {},
 		"source": {
 			"provider": "filesystem",
 			"path": "/users/arjan/Document/dev/oktaset-cfp-admin"
@@ -49,7 +62,7 @@
 	},
 	{
 		"name": "Built by shell script project",
-		"hook": "",
+		"hook": {},
 		"source": {
 			"provider": "git",
 			"url": "https://github.com/scriptabuild/samples.git"
@@ -57,7 +70,8 @@
 		"run": [
 			{
 				"cmd": "$scripts$/batchfile",
-				"args": []
+				"args": [],
+				"options":{"cwd": "%scripts%"}				
 			}
 		]
 	}

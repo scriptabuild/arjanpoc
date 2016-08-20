@@ -20,6 +20,9 @@ body{
 .prompt{
 	color: #aaa;
 }
+.unknown{
+	color: #666;
+}
 .ok{
 	color: #00ff00;
 }
