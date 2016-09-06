@@ -53,7 +53,7 @@ function runSpawn(cmd, args, options) {
     return function () {
         return Q.promise(function (resolve, reject, notify) {
 
-            logger.info("┏━━━━ Starting external process");
+            logger.info("┏━━━━ Starting child process");
             logger.info(`┃ "${cmd} ${args.join(" ")}"`, {options});
             // logger.info({ cmd, args, options });
 

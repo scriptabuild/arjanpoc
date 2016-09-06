@@ -9,12 +9,12 @@ const executeTask = require("./blocks/executeTask");
 const log = require("./blocks/log");
 const _if = require("./blocks/_if");
 const block = require("./blocks/block");
+const git = require("./blocks/git");
 const {
     transform,
     isFile,
     isDirectory
 } = require("./utils")
-const loadFromGit = require("./blocks/loadFromGit");
 const winston = require("winston");
 
 
@@ -90,15 +90,7 @@ app.post("/project-build/:projectName",
 			.then(createFolder(build))
 
 			.then(log("Loading project into sandbox"))
-			// .then(loadFromGit(project.source, sandbox, transFn))
-			.then(_if(isDirectory(transFn("%build%/.git")),() =>
-				Q()
-					.then(executeTask({ cmd: "git", args: ['reset', "--hard"], options: { cwd: "%build%" } }, transFn))
-					.then(executeTask({ cmd: "git", args: ['pull'], options: { cwd: "%build%" } }, transFn)),
-
-				executeTask({ cmd: "git", args: ['clone', project.source.url, "%build%"], options: { cwd: "%sandbox%" } }, transFn)))
-			.then(executeTask({ cmd: "git", args: ['checkout', 'HEAD'], options: { cwd: "%build%" } }, transFn))
-
+			.then(git.load(project, transFn))
 			.then(log("Running tasks"))
 			.then(executeTask(project.run, transFn))
 			
@@ -110,6 +102,7 @@ app.post("/project-build/:projectName",
 			// .then(copyFolder("%build%", "%sandbox%/" + (new Date()).toISOString(), transFn))
 			
 			.then(log("Scripts completed successfully"))
+			//.then(git.tag( ... ))
 			.catch(err => console.error("Scripts failed", err));
 
 
