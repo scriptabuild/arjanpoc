@@ -72,6 +72,9 @@ app.post("/project-build/:projectName",
 	function (req, resp) {
 		let projectName = req.params.projectName;
 
+		// TODO: Trigger the build. Similar to a webhook
+		// - set up logging
+		// - write end status to file
 		// let commitId;
 		// let branchname;
 
@@ -97,17 +100,18 @@ app.post("/project-build/:projectName",
 			.then(executeTask({ cmd: "git", args: ['checkout', 'HEAD'], options: { cwd: "%build%" } }, transFn))
 
 			.then(log("Running tasks"))
-			.then(() =>
-				executeTask(project.run, transFn)()
-			)
-			.then(log("Copying output files"))
-			.then(copyFolder("%build%", "%sandbox%/" + (new Date()).toISOString(), transFn))
+			.then(executeTask(project.run, transFn))
+			
+			// .then(log("Creating a tag for the build"))
+			// .then(executeTask({ cmd: "git", args: ['tag', buildNo], options: { cwd: "%build%" } }, transFn))
+			// .then(executeTask({ cmd: "git", args: ['push', 'origin', theTag, commitId], options: { cwd: "%build%" } }, transFn))
+
+			// .then(log("Copying output files"))
+			// .then(copyFolder("%build%", "%sandbox%/" + (new Date()).toISOString(), transFn))
+			
 			.then(log("Scripts completed successfully"))
 			.catch(err => console.error("Scripts failed", err));
 
-		// TODO: Trigger the build. Similar to a webhook
-		// - set up logging
-		// - write end status to file
 
 		console.log("*** Starting the build for " + req.params.projectName);
 		resp.send("oki!!!");

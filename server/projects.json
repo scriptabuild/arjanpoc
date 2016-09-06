@@ -8,8 +8,7 @@
 		},
 		"run": [
 			"npm update",
-			"npm run ci-task",
-			"node %scripts%/build-node-app.js"
+			"npm run ci-task"
 		]
 	},
 	{

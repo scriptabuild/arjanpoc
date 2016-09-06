@@ -1,10 +1,11 @@
 <template>
 	<span class="prompt">$</span> scriptabuild status --project "{{project.name}}"<br>
 	<br>
-	Latest build for master branch was 6 minutes ago (Commit: 52b8775)<br>
+	Latest build for master branch was ??? minutes ago (Commit hash: ??????)<br>
 	Status: <span class="{{project.status}}">{{project.status}}</span><br>
-	<a v-link="{name: 'build-logs', params: {projectName: project.name, buildId: ''}}">[View Log]</a><br>
+	<br>
 	<button class="link" v-on:click="click">[Build now]</button><br>
+	<!--<a v-link="{name: 'build-logs', params: {projectName: project.name, buildId: ''}}">[View Log]</a><br>-->
 	<!--<br>
 	[Switch branch]<br>
 	[View earlier builds]<br>
@@ -22,7 +23,8 @@
 		name: "project-detail",
 		data: () => ({
 			project: {
-				name: undefined
+				name: undefined,
+				status: "unknown"
 			}
 		}),
 		methods: {
@@ -45,7 +47,9 @@
 		init() {
 			fetch(`http://localhost:3000/project-detail/${this.$route.params.projectName}`)
 				.then(resp => resp.json())
-				.then(project => this.project = project);
+				.then(project => {
+					this.project.name = project.name
+				});
 		}
 	};
 </script>
