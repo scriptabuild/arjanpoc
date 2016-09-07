@@ -16,6 +16,8 @@ const {
     isDirectory
 } = require("./utils")
 const winston = require("winston");
+const fs = require("fs");
+const path = require("path");
 
 
 
@@ -80,29 +82,51 @@ app.post("/project-build/:projectName",
 
 		var project = projects.find(p => p.name == projectName);
 		var sandbox = config.workspaces + "/" + escape(project.name);
-		var build = sandbox + "/build";
-		var paths = { sandbox, build };
-		var transFn = obj => transform(obj, paths, 10);
+		var build;
+		var paths;
+		var transFn;
 
-		Q()
+		getNextBuildNo(sandbox)
+			.then(buildNo => {
+				output = sandbox + "/" + buildNo;
+				build = sandbox + "/build";
+				paths = { sandbox, output, build };
+				transFn = obj => transform(obj, paths, 10);
+
+				return { paths, transFn };
+			})
 			.then(log("Preparing sandbox for project"))
-			// .then(createFolder(sandbox))
-			.then(createFolder(build))
+			.then(createFolder("%build%"))
 
 			.then(log("Loading project into sandbox"))
-			.then(git.load(project, transFn))
+			.then(git.load(project))
+
 			.then(log("Running tasks"))
-			.then(executeTask(project.run, transFn))
-			
+			.then(x => {
+				console.log(x);
+				return x;
+			})
+			.then(executeTask(project.run))
+
+			// .then(git.tag( ... ))
+			// .then(git.push( ... ))
+
 			// .then(log("Creating a tag for the build"))
 			// .then(executeTask({ cmd: "git", args: ['tag', buildNo], options: { cwd: "%build%" } }, transFn))
 			// .then(executeTask({ cmd: "git", args: ['push', 'origin', theTag, commitId], options: { cwd: "%build%" } }, transFn))
 
-			// .then(log("Copying output files"))
-			// .then(copyFolder("%build%", "%sandbox%/" + (new Date()).toISOString(), transFn))
-			
+			.then(log("Copying output files"))
+			.then(x => {
+				console.log(x);
+				return x;
+			})
+			.then(copyFolder("%build%", "%output%/"))
+
 			.then(log("Scripts completed successfully"))
-			//.then(git.tag( ... ))
+			.then(x => {
+				console.log(x);
+				return x;
+			})
 			.catch(err => console.error("Scripts failed", err));
 
 
@@ -110,17 +134,23 @@ app.post("/project-build/:projectName",
 		resp.send("oki!!!");
 	});
 
-// // 1. boot the server -> create folders and set up hooks endpoint
 
-// app.post("github-hook",
-// 	bodyparser.json(),
-// 	function (req, resp) {
+function getNextBuildNo(folderName) {
+	let readdir = Q.nfbind(fs.readdir);
+	return readdir(folderName).then(function (files) {
+		files = files
+			.filter(n => !isNaN(n))
+			.filter(file => fs.statSync(path.join(folderName, file)).isDirectory());
 
-// 		var postdata = req.body;
+		if (files.length === 0) {
+			return 1;
+		}
 
-// 		// 2. create workspace, checkout build script, run build script...
-// 	}
-// );
+		var max = Math.max.apply(Math, files);
+		return max + 1;
+	});
+}
+
 
 // app.get("dashboard", function (req, resp) {
 // 	// list of projects, statuses, disable/enable, buttons to start/pause/stop a build, link to logs/output
@@ -134,10 +164,9 @@ app.post("/project-build/:projectName",
 
 
 
-Q()
+Q({ transFn: obj => obj })
     .then(log("Starting Scriptabuild"))
     .then(createFolder(config.logs))
-    // .then(createFolder(config.workspaces))
 	.then(() => app.listen(3000, function () {
 		console.log('Scriptabuild http server listening on port 3000!');
 	}))

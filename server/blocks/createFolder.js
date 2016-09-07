@@ -6,11 +6,13 @@ const winston = require("winston");
 var logger = winston.loggers.get("system");
 
 
-module.exports = function createFolder(path, transformFunc = obj => obj) {
-    return function () {
+module.exports = function createFolder(path) {
+    return function (config) {
+        let transFn = config.transFn || (obj=>obj);
+        path = transFn(path);
+
         logger.info(`┏━━━━ Creating folder "${path}"`);
 
-        path = transformFunc(path);
         let paths = createSubpaths(path);
 
         let pChain = Q();
@@ -20,6 +22,7 @@ module.exports = function createFolder(path, transformFunc = obj => obj) {
         }
         return pChain.then(function () {
             logger.info(`┗━━━━ Created "${path}" folder`);
+            return config;
         });
     }
 }

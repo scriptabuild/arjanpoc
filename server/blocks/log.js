@@ -4,8 +4,9 @@ var logger = winston.loggers.get("system");
 
 
 module.exports = function log(...objects) {
-    return function () {
+    return function (config) {
         logger.info(...objects);
+        return config;
     }
 }
 

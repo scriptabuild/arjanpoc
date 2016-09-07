@@ -10,21 +10,25 @@ const {
 
 var logger = winston.loggers.get("system");
 
-exports.load = function (project, transFn) {
-	return function () {
+exports.load = function (project) {
+	return function (config) {
+		let transFn = config.transFn || (obj=>obj);
+		
         logger.info(`┏━━━━ Loading from git "${project.source.url}"`);
 		var tlog = logger.info;
 		logger.info = msg => tlog("┃ " + msg);
-		return Q()
+
+		return Q(config)
 			.then(_if(isDirectory(transFn("%build%/.git")),() =>
-				Q()
-					.then(executeTask({ cmd: "git", args: ['reset', "--hard"], options: { cwd: "%build%" } }, transFn))
-					.then(executeTask({ cmd: "git", args: ['pull'], options: { cwd: "%build%" } }, transFn)),
-				executeTask({ cmd: "git", args: ['clone', project.source.url, "%build%"], options: { cwd: "%sandbox%" } }, transFn)))
-			.then(executeTask({ cmd: "git", args: ['checkout', 'HEAD'], options: { cwd: "%build%" } }, transFn))
+				Q(config)
+					.then(executeTask({ cmd: "git", args: ['reset', "--hard"], options: { cwd: "%build%" } }))
+					.then(executeTask({ cmd: "git", args: ['pull'], options: { cwd: "%build%" } })),
+				executeTask({ cmd: "git", args: ['clone', project.source.url, "%build%"], options: { cwd: "%sandbox%" } })))
+			.then(executeTask({ cmd: "git", args: ['checkout', 'HEAD'], options: { cwd: "%build%" } }))
 			.then(function(){
 				logger.info = tlog;
 		        logger.info(`┗━━━━ Loaded from git "${project.source.url}"`);
+				return config;
 			});
 	}
 }

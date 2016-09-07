@@ -7,29 +7,31 @@ const winston = require("winston");
 var logger = winston.loggers.get("system");
 
 
-module.exports = function executeTask(tasks, transformFunc = obj => obj) {
-    return function () {
+module.exports = function executeTask(tasks) {
+    return function (config) {
+        let transFn = config.transFn || (obj=>obj);
+
         if (Array.isArray(tasks)) {
-            let pChain = Q();
+            let pChain = Q(config);
             for (let task of tasks) {
-                var fn = getPreparedExecSpawnFunction(task, transformFunc);
+                var fn = getPreparedExecSpawnFunction(task, transFn);
                 pChain = pChain.then(fn);
             }
             return pChain;
         }
         else {
-            var fn = getPreparedExecSpawnFunction(tasks, transformFunc);
-            return fn();
+            var fn = getPreparedExecSpawnFunction(tasks, transFn);
+            return fn(config);
         }
     }
 }
 
-function getPreparedExecSpawnFunction(task, transformFunc) {
-    task = transformFunc(task);
+function getPreparedExecSpawnFunction(task, transFn) {
+    task = transFn(task);
     let {cmd, args, options} = resolveParams(task);
     options = options || {};
     if (!options.cwd) {
-        options.cwd = transformFunc("%build%");
+        options.cwd = transFn("%build%");
     }
     return runSpawn(cmd, args, options);
 }
@@ -50,7 +52,8 @@ function resolveParams(task) {
 }
 
 function runSpawn(cmd, args, options) {
-    return function () {
+    return function (config) {
+
         return Q.promise(function (resolve, reject, notify) {
 
             logger.info("┏━━━━ Starting child process");
@@ -73,7 +76,7 @@ function runSpawn(cmd, args, options) {
             proc.on('close', code => {
                 if (code == 0) {
                     logger.info(`┗━━━━ Child process exited with code ${code}`);
-                    resolve(code);
+                    resolve(config);
                 } else {
                     logger.error(`┗━━━━ Child process exited with code ${code}`);
                     reject({ name: "ChildProcessError", message, code });
