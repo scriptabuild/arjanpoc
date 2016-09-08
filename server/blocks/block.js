@@ -5,13 +5,15 @@ var logger = winston.loggers.get("system");
 
 module.exports = function (fn, name = "") {
 	return function (buildCtx) {
-		// TODO: Add support for flowing buildCtx into fn()
-		return Q()
-			.then(() => logger.info(`┏━━━━ ${name}`))
+		return Q(buildCtx)
+			.then(ctx => {
+				logger.info(`┏━━━━ ${name}`);
+				return ctx;
+			})
 			.then(fn)
-			.then(() => {
+			.then(ctx => {
 				logger.info(`┗━━━━ ${name}`);
-				return buildCtx;
+				return ctx || buildCtx;
 			})
 			.catch(() => logger.error(`┗━━━━ ${name}`));
 	}

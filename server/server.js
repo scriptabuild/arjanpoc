@@ -83,23 +83,26 @@ app.post("/project-build/:projectName",
 		// let branchname;
 
 		var project = projects.find(p => p.name == projectName);
-		var sandbox = config.workspaces + "/" + escape(project.name);
+		var sandbox =  config.workspaces + "/" + escape(project.name);
 
-		Q({})
-			// .then(populateBuildConfig(project))  // TODO: Will replace next two steps...
-			.then(populateBuildNo(sandbox))
-			.then(config => {
-				config.paths = {
-					sandbox,
-					output: sandbox + "/" + config.buildNo,
-					build: sandbox + "/build"
-				};
-				config.transFn = obj => transform(obj, config.paths, 10);
+		var buildCtx = {
+			project,
+			paths: {
+				sandbox,
+				build: sandbox + "/build"
+			}
+		};
 
-				return config;
+		Q(buildCtx)
+			.then(populateBuildNo())
+			.then(ctx => {
+				ctx.paths.output = ctx.paths.sandbox + "/" + ctx.buildNo;
+				ctx.transFn = obj => transform(obj, ctx.paths, 10);
+
+				return ctx;
 			})
 			.then(log("Preparing sandbox for project"))
-			// .then(config => { console.log(config); return config; })
+			.then(block(ctx => console.log(ctx)))
 			.then(createFolder("%build%"))
 			.then(log("Loading project into sandbox"))
 			.then(git.load(project))
@@ -111,18 +114,21 @@ app.post("/project-build/:projectName",
 			.then(copyFolder("%build%", "%output%/"))
 
 			.then(log("Scripts completed successfully"))
-			// .then(markAsOk())
+			// .then(mark.asOk())
 			// .then(git.tag( ... ))
 			// .then(git.push( ... ))
-			.catch(err => console.error("Scripts failed", err));
 
+			.catch(err => console.error("Scripts failed", err))
+			// .then(mark.asFailed())
+			;
 
 		console.log("*** Starting the build for " + req.params.projectName);
 		resp.send("oki!!!");
 	});
 
-function populateBuildNo(folderName) {
-	return function (config) {
+function populateBuildNo() {
+	return function (buildCtx) {
+		let folderName = buildCtx.paths.sandbox;
 		let readdir = Q.nfbind(fs.readdir);
 		return readdir(folderName)
 			.then(function (files) {
@@ -131,14 +137,14 @@ function populateBuildNo(folderName) {
 					.filter(file => fs.statSync(path.join(folderName, file)).isDirectory());
 
 				if (files.length === 0) {
-					config.buildNo = 1;
+					buildCtx.buildNo = 1;
 				}
 				else {
 					var max = Math.max.apply(Math, files);
-					config.buildNo = max + 1;
+					buildCtx.buildNo = max + 1;
 				}
 
-				return config;
+				return buildCtx;
 			});
 	}
 }
