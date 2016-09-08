@@ -82,51 +82,33 @@ app.post("/project-build/:projectName",
 
 		var project = projects.find(p => p.name == projectName);
 		var sandbox = config.workspaces + "/" + escape(project.name);
-		var build;
-		var paths;
-		var transFn;
 
-		getNextBuildNo(sandbox)
-			.then(buildNo => {
-				output = sandbox + "/" + buildNo;
-				build = sandbox + "/build";
-				paths = { sandbox, output, build };
-				transFn = obj => transform(obj, paths, 10);
+		Q({})
+			// .then(populateConfig(project))  // TODO: Will replace next two steps...
+			.then(populateBuildNo(sandbox))
+			.then(config => {
+				config.paths = {
+					sandbox,
+					output: sandbox + "/" + config.buildNo,
+					build: sandbox + "/build"
+				};
+				config.transFn = obj => transform(obj, config.paths, 10);
 
-				return { paths, transFn };
+				return config;
 			})
 			.then(log("Preparing sandbox for project"))
+			// .then(config => { console.log(config); return config; })
 			.then(createFolder("%build%"))
-
 			.then(log("Loading project into sandbox"))
 			.then(git.load(project))
-
 			.then(log("Running tasks"))
-			.then(x => {
-				console.log(x);
-				return x;
-			})
 			.then(executeTask(project.run))
-
+			.then(log("Copying output files"))
+			.then(copyFolder("%build%", "%output%/"))
+			.then(log("Scripts completed successfully"))
+			// .then(markAsOk())
 			// .then(git.tag( ... ))
 			// .then(git.push( ... ))
-
-			// .then(log("Creating a tag for the build"))
-			// .then(executeTask({ cmd: "git", args: ['tag', buildNo], options: { cwd: "%build%" } }, transFn))
-			// .then(executeTask({ cmd: "git", args: ['push', 'origin', theTag, commitId], options: { cwd: "%build%" } }, transFn))
-
-			.then(log("Copying output files"))
-			.then(x => {
-				console.log(x);
-				return x;
-			})
-			.then(copyFolder("%build%", "%output%/"))
-
-			.then(log("Scripts completed successfully"))
-			.then(x => {
-				console.log(x);
-				return x;
-			})
 			.catch(err => console.error("Scripts failed", err));
 
 
@@ -135,20 +117,31 @@ app.post("/project-build/:projectName",
 	});
 
 
-function getNextBuildNo(folderName) {
-	let readdir = Q.nfbind(fs.readdir);
-	return readdir(folderName).then(function (files) {
-		files = files
-			.filter(n => !isNaN(n))
-			.filter(file => fs.statSync(path.join(folderName, file)).isDirectory());
+// function populateBuildConfig() {
+// 	return function (config) {
+// 		Q(config).then(getNextBuildNo(config.project.projectName))
+// 	}
+// }
 
-		if (files.length === 0) {
-			return 1;
-		}
+function populateBuildNo(folderName) {
+	return function (config) {
+		let readdir = Q.nfbind(fs.readdir);
+		return readdir(folderName).then(function (files) {
+			files = files
+				.filter(n => !isNaN(n))
+				.filter(file => fs.statSync(path.join(folderName, file)).isDirectory());
 
-		var max = Math.max.apply(Math, files);
-		return max + 1;
-	});
+			if (files.length === 0) {
+				config.buildNo = 1;
+			}
+			else {
+				var max = Math.max.apply(Math, files);
+				config.buildNo = max + 1;
+			}
+
+			return config;
+		});
+	}
 }
 
 

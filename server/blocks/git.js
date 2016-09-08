@@ -33,9 +33,10 @@ exports.load = function (project) {
 	}
 }
 
-exports.tag = function(){
-	return function(){
-		return Q();
-		// TODO: code to create a git tag
-	}
-}
+// exports.tag = function(){
+// 	return function(config){
+// 		return Q(config)
+// 			.then(executeTask({ cmd: "git", args: ['tag', buildNo], options: { cwd: "%build%" } }))
+// 			.then(executeTask({ cmd: "git", args: ['push', 'origin', theTag, commitId], options: { cwd: "%build%" } }))
+// 	}
+// }
