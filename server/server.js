@@ -50,6 +50,7 @@ app.get("/app*", function (req, resp) {
 app.get("/project-list", cors(), function (req, resp) {
 	const projects = require("./projects");
 
+	// TODO: Add information about latest build status for this project (ok/failed/unknown)
 	resp.json(_(projects).map(p => ({ name: p.name })).value());
 });
 
@@ -60,6 +61,7 @@ app.get("/project-detail/:projectName",
 		const projects = require("./projects");
 		let project = _(projects).find({ name: projectName })
 
+		// TODO: Add information about latest 1 or 2 build status for this project (if ok -> latest statusreport) or (if failed -> latest statusreport + last ok statusreport)
 		let projectDetail = {
 
 		};
@@ -84,7 +86,7 @@ app.post("/project-build/:projectName",
 		var sandbox = config.workspaces + "/" + escape(project.name);
 
 		Q({})
-			// .then(populateConfig(project))  // TODO: Will replace next two steps...
+			// .then(populateBuildConfig(project))  // TODO: Will replace next two steps...
 			.then(populateBuildNo(sandbox))
 			.then(config => {
 				config.paths = {
@@ -101,10 +103,13 @@ app.post("/project-build/:projectName",
 			.then(createFolder("%build%"))
 			.then(log("Loading project into sandbox"))
 			.then(git.load(project))
+
 			.then(log("Running tasks"))
 			.then(executeTask(project.run))
+
 			.then(log("Copying output files"))
 			.then(copyFolder("%build%", "%output%/"))
+
 			.then(log("Scripts completed successfully"))
 			// .then(markAsOk())
 			// .then(git.tag( ... ))
@@ -116,31 +121,25 @@ app.post("/project-build/:projectName",
 		resp.send("oki!!!");
 	});
 
-
-// function populateBuildConfig() {
-// 	return function (config) {
-// 		Q(config).then(getNextBuildNo(config.project.projectName))
-// 	}
-// }
-
 function populateBuildNo(folderName) {
 	return function (config) {
 		let readdir = Q.nfbind(fs.readdir);
-		return readdir(folderName).then(function (files) {
-			files = files
-				.filter(n => !isNaN(n))
-				.filter(file => fs.statSync(path.join(folderName, file)).isDirectory());
+		return readdir(folderName)
+			.then(function (files) {
+				files = files
+					.filter(n => !isNaN(n))
+					.filter(file => fs.statSync(path.join(folderName, file)).isDirectory());
 
-			if (files.length === 0) {
-				config.buildNo = 1;
-			}
-			else {
-				var max = Math.max.apply(Math, files);
-				config.buildNo = max + 1;
-			}
+				if (files.length === 0) {
+					config.buildNo = 1;
+				}
+				else {
+					var max = Math.max.apply(Math, files);
+					config.buildNo = max + 1;
+				}
 
-			return config;
-		});
+				return config;
+			});
 	}
 }
 

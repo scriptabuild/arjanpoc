@@ -5,12 +5,12 @@ var logger = winston.loggers.get("system");
 
 
 module.exports = function _if(condition, trueFunc, falseFunc) {
-    return function (config) {
+    return function (buildCtx) {
         return Q(condition).then(function (res) {
             if (res) {
-                return trueFunc ? trueFunc(config) : undefined;
+                return trueFunc ? trueFunc(buildCtx) : undefined;
             }
-            return falseFunc ? falseFunc(config) : undefined;
+            return falseFunc ? falseFunc(buildCtx) : undefined;
         });
     };
 }

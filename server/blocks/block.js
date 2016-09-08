@@ -4,13 +4,14 @@ const winston = require("winston");
 var logger = winston.loggers.get("system");
 
 module.exports = function (fn, name = "") {
-	return function (config) {
+	return function (buildCtx) {
+		// TODO: Add support for flowing buildCtx into fn()
 		return Q()
 			.then(() => logger.info(`┏━━━━ ${name}`))
 			.then(fn)
 			.then(() => {
 				logger.info(`┗━━━━ ${name}`);
-				return config;
+				return buildCtx;
 			})
 			.catch(() => logger.error(`┗━━━━ ${name}`));
 	}

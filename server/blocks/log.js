@@ -4,9 +4,9 @@ var logger = winston.loggers.get("system");
 
 
 module.exports = function log(...objects) {
-    return function (config) {
+    return function (buildCtx) {
         logger.info(...objects);
-        return config;
+        return buildCtx;
     }
 }
 

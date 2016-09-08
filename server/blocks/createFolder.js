@@ -7,8 +7,8 @@ var logger = winston.loggers.get("system");
 
 
 module.exports = function createFolder(path) {
-    return function (config) {
-        let transFn = config.transFn || (obj=>obj);
+    return function (buildCtx) {
+        let transFn = buildCtx.transFn || (obj=>obj);
         path = transFn(path);
 
         logger.info(`┏━━━━ Creating folder "${path}"`);
@@ -22,7 +22,7 @@ module.exports = function createFolder(path) {
         }
         return pChain.then(function () {
             logger.info(`┗━━━━ Created "${path}" folder`);
-            return config;
+            return buildCtx;
         });
     }
 }

@@ -8,11 +8,11 @@ var logger = winston.loggers.get("system");
 
 
 module.exports = function executeTask(tasks) {
-    return function (config) {
-        let transFn = config.transFn || (obj=>obj);
+    return function (buildCtx) {
+        let transFn = buildCtx.transFn || (obj=>obj);
 
         if (Array.isArray(tasks)) {
-            let pChain = Q(config);
+            let pChain = Q(buildCtx);
             for (let task of tasks) {
                 var fn = getPreparedExecSpawnFunction(task, transFn);
                 pChain = pChain.then(fn);
@@ -21,7 +21,7 @@ module.exports = function executeTask(tasks) {
         }
         else {
             var fn = getPreparedExecSpawnFunction(tasks, transFn);
-            return fn(config);
+            return fn(buildCtx);
         }
     }
 }
@@ -52,7 +52,7 @@ function resolveParams(task) {
 }
 
 function runSpawn(cmd, args, options) {
-    return function (config) {
+    return function (buildCtx) {
 
         return Q.promise(function (resolve, reject, notify) {
 
@@ -76,7 +76,7 @@ function runSpawn(cmd, args, options) {
             proc.on('close', code => {
                 if (code == 0) {
                     logger.info(`┗━━━━ Child process exited with code ${code}`);
-                    resolve(config);
+                    resolve(buildCtx);
                 } else {
                     logger.error(`┗━━━━ Child process exited with code ${code}`);
                     reject({ name: "ChildProcessError", message, code });

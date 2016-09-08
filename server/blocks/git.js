@@ -11,16 +11,16 @@ const {
 var logger = winston.loggers.get("system");
 
 exports.load = function (project) {
-	return function (config) {
-		let transFn = config.transFn || (obj=>obj);
+	return function (buildCtx) {
+		let transFn = buildCtx.transFn || (obj=>obj);
 		
         logger.info(`┏━━━━ Loading from git "${project.source.url}"`);
 		var tlog = logger.info;
 		logger.info = msg => tlog("┃ " + msg);
 
-		return Q(config)
+		return Q(buildCtx)
 			.then(_if(isDirectory(transFn("%build%/.git")),() =>
-				Q(config)
+				Q(buildCtx)
 					.then(executeTask({ cmd: "git", args: ['reset', "--hard"], options: { cwd: "%build%" } }))
 					.then(executeTask({ cmd: "git", args: ['pull'], options: { cwd: "%build%" } })),
 				executeTask({ cmd: "git", args: ['clone', project.source.url, "%build%"], options: { cwd: "%sandbox%" } })))
@@ -28,14 +28,14 @@ exports.load = function (project) {
 			.then(function(){
 				logger.info = tlog;
 		        logger.info(`┗━━━━ Loaded from git "${project.source.url}"`);
-				return config;
+				return buildCtx;
 			});
 	}
 }
 
 // exports.tag = function(){
-// 	return function(config){
-// 		return Q(config)
+// 	return function(buildCtx){
+// 		return Q(buildCtx)
 // 			.then(executeTask({ cmd: "git", args: ['tag', buildNo], options: { cwd: "%build%" } }))
 // 			.then(executeTask({ cmd: "git", args: ['push', 'origin', theTag, commitId], options: { cwd: "%build%" } }))
 // 	}

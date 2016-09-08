@@ -7,8 +7,8 @@ var logger = winston.loggers.get("system");
 
 
 module.exports = function copyFolder(fromPath, toPath) {
-    return function (config) {
-        let transFn = config.transFn || (obj => obj);
+    return function (buildCtx) {
+        let transFn = buildCtx.transFn || (obj => obj);
         fromPath = transFn(fromPath);
         toPath = transFn(toPath);
 
@@ -16,7 +16,7 @@ module.exports = function copyFolder(fromPath, toPath) {
         let promise = execCopyFolder(fromPath, toPath);
         return promise.then(function () {
             logger.info(`┗━━━━ Copied folder "${fromPath}" to "${toPath}"`);
-            return config;
+            return buildCtx;
         });
     }
 }
