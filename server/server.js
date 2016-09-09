@@ -105,6 +105,7 @@ app.post("/project-build/:projectName",
 			// .then(git.tag( ... ))
 			// .then(git.push( ... ))
 			.catch(err => {
+				ctx.logger.error(err);
 				console.error("Scripts failed", err);
 				mark.asFailed()(ctx);
 			});
