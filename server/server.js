@@ -94,8 +94,13 @@ app.post("/project-build/:projectName",
 		let project = projects.find(p => p.name == projectName);
 		let ctx = createBuildContext(project);
 
+
 		Q(ctx)
 			.then(createFolder("%output%"))
+			.then(ctx => {
+				ctx.logger = getLogger(ctx.transFn("%output%/log.txt"));
+				return ctx;
+			})
 			.then(git.load(project))
 			.then(executeTask(project.run))
 			// .then(log("Copying output files"))
@@ -108,6 +113,7 @@ app.post("/project-build/:projectName",
 				ctx.logger.error(err);
 				console.error("Scripts failed", err);
 				mark.asFailed()(ctx);
+				ctx.logger
 			});
 
 		console.log("*** Starting the build for " + req.params.projectName);
@@ -135,6 +141,16 @@ function createBuildContext(project) {
 	return ctx;
 }
 
+function getLogger(filename){
+	return new (winston.Logger)({
+		level: "info",
+		transports: [
+			new (winston.transports.Console)(),
+			new (winston.transports.File)({ filename })
+		]
+	});
+}
+
 function getLatestBuildNoSync(project) {
 	var sandbox = config.workspaces + "/" + escape(project.name);
 	try {
@@ -155,7 +171,7 @@ function getLatestBuildNoSync(project) {
 
 function getStatusSync(project) {
 	var latestBuildNo = getLatestBuildNoSync(project);
-	if(latestBuildNo === 0) return "never built";
+	if (latestBuildNo === 0) return "never built";
 
 	var sandbox = config.workspaces + "/" + escape(project.name);
 
