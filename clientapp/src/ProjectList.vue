@@ -1,10 +1,10 @@
 <template>
-	<span class="prompt">$</span> scriptabuild status --list<br>
+<span class="prompt">$</span> scriptabuild status --list<br>
 	<br>
 	<ul>
 		<li v-for="project in projects">
 			<a v-link="{name: 'project-detail', params: { projectName: project.name}}">
-			{{project.name}} <span class="{{project.status}}">{{project.status}}</span>
+				{{project.name}} <span class="status {{project.buildStatusCss}}">{{project.buildStatus}}</span>
 			</a>
 		</li>
 	</ul>
@@ -25,8 +25,9 @@
 				.then(resp => resp.json())
 				.then(projects => this.projects = projects)
 				.then(() => {
+					let styles = {"never built": "unknown", ok:"ok", progress: "progress", unknown: "unknown", failed: "failed"};
 					for(var k in this.projects){
-						Vue.set(this.projects[k], "status", "unknown");
+						Vue.set(this.projects[k], "buildStatusCss", styles[this.projects[k].buildStatus]);
 					}
 				});
 		}

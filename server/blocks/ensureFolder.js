@@ -3,12 +3,10 @@ const Q = require("q");
 const _ = require("lodash");
 const winston = require("winston");
 
-var logger = winston.loggers.get("system");
-
-
-module.exports = function createFolder(path) {
-    return function (buildCtx) {
-        let transFn = buildCtx.transFn || (obj=>obj);
+module.exports = function ensureFolder(path) {
+    return function (ctx) {
+        let logger = ctx.logger || winston.loggers.get("system");
+        let transFn = ctx.transFn || (obj=>obj);
         path = transFn(path);
 
         logger.info(`┏━━━━ Creating folder "${path}"`);
@@ -17,12 +15,12 @@ module.exports = function createFolder(path) {
 
         let pChain = Q();
         for (let path of paths) {
-            var fn = execCreateFolder(path);
+            var fn = execCreateFolder(ctx, path);
             pChain = pChain.then(fn);
         }
         return pChain.then(function () {
             logger.info(`┗━━━━ Created "${path}" folder`);
-            return buildCtx;
+            return ctx;
         });
     }
 }
@@ -37,18 +35,18 @@ function createSubpaths(path) {
     return paths;
 }
 
-function execCreateFolder(path, mask) {
+function execCreateFolder(ctx, path, mask) {
     return function () {
+        let logger = ctx.logger || winston.loggers.get("system");
+        
         return Q.promise(function (resolve, reject, progress) {
             if (mask == undefined) {
                 mask = 0777;
             }
             fs.mkdir(path, mask, function (err) {
                 if (err && err.code == "EEXIST") {
-                    // logger.info(`┃ "${path}" Already exists`);
                     resolve(path);
                 } else if (err) {
-                    // logger.info(`┃  "${path}" Failed creating`);
                     reject(err);
                 } else {
                     logger.info(`┃ "${path}" created`);

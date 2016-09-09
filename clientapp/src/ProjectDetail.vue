@@ -2,7 +2,7 @@
 	<span class="prompt">$</span> scriptabuild status --project "{{project.name}}"<br>
 	<br>
 	Latest build for master branch was ??? minutes ago (Commit hash: ??????)<br>
-	Status: <span class="{{project.status}}">{{project.status}}</span><br>
+	Status: <span class="status {{project.status}}">{{project.status}}</span><br>
 	<br>
 	<button class="link" v-on:click="click">[Build now]</button><br>
 	<!--<a v-link="{name: 'build-logs', params: {projectName: project.name, buildId: ''}}">[View Log]</a><br>-->

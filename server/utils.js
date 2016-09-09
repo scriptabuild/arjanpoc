@@ -34,7 +34,7 @@ function replace(s, dictionary) {
         return dictionary[b] === undefined
             ? `%${b}%`
             : dictionary[b];
-    });
+        });
 }
 
 

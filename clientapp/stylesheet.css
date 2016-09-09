@@ -20,13 +20,17 @@ body{
 .prompt{
 	color: #aaa;
 }
-.unknown{
+.status.unknown,
+.status.never.built{
 	color: #666;
 }
-.ok{
+.status.progress {
+	color: #ffff00;
+}
+.status.ok{
 	color: #00ff00;
 }
-.failed{
+.status.failed{
 	color: #ff0000;
 }
 .cursor{

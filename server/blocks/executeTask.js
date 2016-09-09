@@ -4,15 +4,13 @@ const Q = require("q");
 const _ = require("lodash");
 const winston = require("winston");
 
-var logger = winston.loggers.get("system");
-
-
 module.exports = function executeTask(tasks) {
-    return function (buildCtx) {
-        let transFn = buildCtx.transFn || (obj=>obj);
+    return function (ctx) {
+        let logger = ctx.logger || winston.loggers.get("system");
+        let transFn = ctx.transFn || (obj=>obj);
 
         if (Array.isArray(tasks)) {
-            let pChain = Q(buildCtx);
+            let pChain = Q(ctx);
             for (let task of tasks) {
                 var fn = getPreparedExecSpawnFunction(task, transFn);
                 pChain = pChain.then(fn);
@@ -21,7 +19,7 @@ module.exports = function executeTask(tasks) {
         }
         else {
             var fn = getPreparedExecSpawnFunction(tasks, transFn);
-            return fn(buildCtx);
+            return fn(ctx);
         }
     }
 }
@@ -52,7 +50,8 @@ function resolveParams(task) {
 }
 
 function runSpawn(cmd, args, options) {
-    return function (buildCtx) {
+    return function (ctx) {
+        let logger = ctx.logger || winston.loggers.get("system");
 
         return Q.promise(function (resolve, reject, notify) {
 
@@ -75,8 +74,8 @@ function runSpawn(cmd, args, options) {
 
             proc.on('close', code => {
                 if (code == 0) {
-                    logger.info(`┗━━━━ Child process exited with code ${code}`);
-                    resolve(buildCtx);
+                    logger.info(`┗━━━━ Child process exited with code 0`);
+                    resolve(ctx);
                 } else {
                     logger.error(`┗━━━━ Child process exited with code ${code}`);
                     reject({ name: "ChildProcessError", message, code });

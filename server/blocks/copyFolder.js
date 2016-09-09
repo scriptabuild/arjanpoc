@@ -3,25 +3,26 @@ const Q = require("q");
 const _ = require("lodash");
 const winston = require("winston");
 
-var logger = winston.loggers.get("system");
-
 
 module.exports = function copyFolder(fromPath, toPath) {
-    return function (buildCtx) {
-        let transFn = buildCtx.transFn || (obj => obj);
+    return function (ctx) {
+        let logger = ctx.logger || winston.loggers.get("system");
+        let transFn = ctx.transFn || (obj => obj);
         fromPath = transFn(fromPath);
         toPath = transFn(toPath);
 
         logger.info(`┏━━━━ Copying folder "${fromPath}" to "${toPath}"`);
-        let promise = execCopyFolder(fromPath, toPath);
+        let promise = execCopyFolder(ctx, fromPath, toPath);
         return promise.then(function () {
             logger.info(`┗━━━━ Copied folder "${fromPath}" to "${toPath}"`);
-            return buildCtx;
+            return ctx;
         });
     }
 }
 
-function execCopyFolder(fromPath, toPath) {
+function execCopyFolder(ctx, fromPath, toPath) {
+    let logger = ctx.logger || winston.loggers.get("system");
+    
     return Q.promise(function (resolve, reject, progress) {
 
         fsx.copy(fromPath, toPath, function (err) {

@@ -3,29 +3,26 @@ const cors = require("cors");
 const bodyparser = require("body-parser");
 const _ = require("lodash");
 const Q = require("q");
-const createFolder = require("./blocks/createFolder");
+const createFolder = require("./blocks/ensureFolder");
 const copyFolder = require("./blocks/copyFolder");
 const executeTask = require("./blocks/executeTask");
 const log = require("./blocks/log");
 const _if = require("./blocks/_if");
 const block = require("./blocks/block");
 const git = require("./blocks/git");
+const mark = require("./blocks/mark");
 const {
-    transform,
-    isFile,
-    isDirectory
+    transform
+    // isFile,
+    // isDirectory
 } = require("./utils")
 const winston = require("winston");
 const fs = require("fs");
 const path = require("path");
 
-
-
 const config = require("./config");
 const projects = require("./projects");
 
-//TODO: Ensure log folder exists
-//TODO: Seperate logs for system and project (per project and timestamp - record timestamp, script commit id, project commit id)
 var logger = new winston.Logger({
     transports: [
         new winston.transports.Console({ level: "error" }),
@@ -34,6 +31,8 @@ var logger = new winston.Logger({
 });
 winston.loggers.add("system");
 
+
+// setup EXPRESS application
 
 var app = express();
 
@@ -50,9 +49,21 @@ app.get("/app*", function (req, resp) {
 app.get("/project-list", cors(), function (req, resp) {
 	const projects = require("./projects");
 
-	// TODO: Add information about latest build status for this project (ok/failed/unknown)
-	resp.json(_(projects).map(p => ({ name: p.name })).value());
+	results = _(projects)
+		.map(p => ({ name: p.name, buildStatus: getStatusSync(p) }))
+		.value();
+
+	resp.json(results);
 });
+
+// app.get("dashboard", function (req, resp) {
+// 	// list of projects, statuses, disable/enable, buttons to start/pause/stop a build, link to logs/output
+// });
+
+// app.get("log/:projectId/:version?", function (req, resp) {
+// 	// show latest log
+// 	// allow navigating to other logs
+// });
 
 app.get("/project-detail/:projectName",
 	cors(),
@@ -72,101 +83,102 @@ app.get("/project-detail/:projectName",
 // app.use(cors({ allowedOrigins: "*" }));
 app.post("/project-build/:projectName",
 	cors(),
-	// bodyparser,
 	function (req, resp) {
 		let projectName = req.params.projectName;
 
 		// TODO: Trigger the build. Similar to a webhook
 		// - set up logging
-		// - write end status to file
 		// let commitId;
 		// let branchname;
 
-		var project = projects.find(p => p.name == projectName);
-		var sandbox =  config.workspaces + "/" + escape(project.name);
+		let project = projects.find(p => p.name == projectName);
+		let ctx = createBuildContext(project);
 
-		var buildCtx = {
-			project,
-			paths: {
-				sandbox,
-				build: sandbox + "/build"
-			}
-		};
-
-		Q(buildCtx)
-			.then(populateBuildNo())
-			.then(ctx => {
-				ctx.paths.output = ctx.paths.sandbox + "/" + ctx.buildNo;
-				ctx.transFn = obj => transform(obj, ctx.paths, 10);
-
-				return ctx;
-			})
-			.then(log("Preparing sandbox for project"))
-			.then(block(ctx => console.log(ctx)))
-			.then(createFolder("%build%"))
-			.then(log("Loading project into sandbox"))
+		Q(ctx)
+			.then(createFolder("%output%"))
 			.then(git.load(project))
-
-			.then(log("Running tasks"))
 			.then(executeTask(project.run))
-
-			.then(log("Copying output files"))
-			.then(copyFolder("%build%", "%output%/"))
-
+			// .then(log("Copying output files"))
+			// .then(copyFolder("%build%", "%output%/"))
 			.then(log("Scripts completed successfully"))
-			// .then(mark.asOk())
+			.then(mark.asCompleted())
 			// .then(git.tag( ... ))
 			// .then(git.push( ... ))
-
-			.catch(err => console.error("Scripts failed", err))
-			// .then(mark.asFailed())
-			;
+			.catch(err => {
+				console.error("Scripts failed", err);
+				mark.asFailed()(ctx);
+			});
 
 		console.log("*** Starting the build for " + req.params.projectName);
 		resp.send("oki!!!");
 	});
 
-function populateBuildNo() {
-	return function (buildCtx) {
-		let folderName = buildCtx.paths.sandbox;
-		let readdir = Q.nfbind(fs.readdir);
-		return readdir(folderName)
-			.then(function (files) {
-				files = files
-					.filter(n => !isNaN(n))
-					.filter(file => fs.statSync(path.join(folderName, file)).isDirectory());
+function createBuildContext(project) {
+	let sandbox = config.workspaces + "/" + escape(project.name);
+	let buildNo = getLatestBuildNoSync(project) + 1;
 
-				if (files.length === 0) {
-					buildCtx.buildNo = 1;
-				}
-				else {
-					var max = Math.max.apply(Math, files);
-					buildCtx.buildNo = max + 1;
-				}
+	let paths = {
+		sandbox,
+		buildNo,
+		build: path.join(sandbox, "build"),
+		output: path.join(sandbox, buildNo.toString())
+	};
 
-				return buildCtx;
-			});
+	let ctx = {
+		project,
+		paths,
+		logger: winston.loggers.get("system"),
+		transFn: obj => transform(obj, paths, 10)
+	};
+
+	return ctx;
+}
+
+function getLatestBuildNoSync(project) {
+	var sandbox = config.workspaces + "/" + escape(project.name);
+	try {
+		var files = fs.readdirSync(sandbox)
+		files = files
+			.filter(n => !isNaN(n))
+			.filter(file => fs.statSync(path.join(sandbox, file)).isDirectory());
+
+		if (files.length === 0) {
+			return 0;
+		}
+		return Math.max.apply(Math, files);
+	}
+	catch (err) {
+		return 0;
 	}
 }
 
+function getStatusSync(project) {
+	var latestBuildNo = getLatestBuildNoSync(project);
+	if(latestBuildNo === 0) return "never built";
 
-// app.get("dashboard", function (req, resp) {
-// 	// list of projects, statuses, disable/enable, buttons to start/pause/stop a build, link to logs/output
-// });
+	var sandbox = config.workspaces + "/" + escape(project.name);
 
-// app.get("log/:projectId/:version?", function (req, resp) {
-// 	// show latest log
-// 	// allow navigating to other logs
-// });
+	let filename = path.join(sandbox, latestBuildNo.toString(), "buildstatus.txt");
+	let fd = fs.openSync(filename, "r");
+	let status = fs.readFileSync(fd);
+	fs.close(fd);
+
+	if (status == "completed") return "ok";
+	if (!status) return "unknown";
+	return status.toString();
+}
 
 
 
 
+// Server STARTUP code
 Q({ transFn: obj => obj })
     .then(log("Starting Scriptabuild"))
     .then(createFolder(config.logs))
 	.then(() => app.listen(3000, function () {
+		console.log();
 		console.log('Scriptabuild http server listening on port 3000!');
+		console.log();
 	}))
     .then(log("Scripts completed successfully"))
     .catch(err => console.error("Scripts failed", err));
