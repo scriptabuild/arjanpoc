@@ -19,6 +19,7 @@ const {
 const winston = require("winston");
 const fs = require("fs");
 const path = require("path");
+const readline = require("readline");
 
 const config = require("./config");
 const projects = require("./projects");
@@ -35,8 +36,9 @@ winston.loggers.add("system");
 // setup EXPRESS application
 
 var app = express();
-
 app.use("/app", express.static(__dirname + "/wwwroot", { extensions: ["js", "css", "jpg", "png"] }));
+app.use(cors());
+// app.use(cors({ allowedOrigins: "*" }));
 
 app.get("/", function (req, resp) {
 	resp.redirect("/app/projects");
@@ -46,43 +48,53 @@ app.get("/app*", function (req, resp) {
 	resp.sendFile(__dirname + "/wwwroot/index.html");
 });
 
-app.get("/project-list", cors(), function (req, resp) {
-	const projects = require("./projects");
-
-	results = _(projects)
-		.map(p => ({ name: p.name, buildStatus: getStatusSync(p) }))
-		.value();
-
-	resp.json(results);
-});
-
-// app.get("dashboard", function (req, resp) {
-// 	// list of projects, statuses, disable/enable, buttons to start/pause/stop a build, link to logs/output
-// });
-
-// app.get("log/:projectId/:version?", function (req, resp) {
-// 	// show latest log
-// 	// allow navigating to other logs
-// });
-
-app.get("/project-detail/:projectName",
-	cors(),
+app.get("/project-list",
 	function (req, resp) {
-		let projectName = req.params.projectName;
 		const projects = require("./projects");
-		let project = _(projects).find({ name: projectName })
 
-		// TODO: Add information about latest 1 or 2 build status for this project (if ok -> latest statusreport) or (if failed -> latest statusreport + last ok statusreport)
-		let projectDetail = {
+		results = _(projects)
+			.map(p => {
+				let buildNo = getLatestBuildNoSync(p);
+				let status = getStatusSync(p, buildNo);
+				return { name: p.name, status: status.status, timestamp: status.timestamp };
+			})
+			.value();
 
-		};
-
-		resp.json(project);
+		resp.json(results);
 	});
 
-// app.use(cors({ allowedOrigins: "*" }));
+app.get("/project-detail/:projectName",
+	function (req, resp) {
+		let name = req.params.projectName;
+		const projects = require("./projects");
+		let project = _(projects).find({ name: name });
+		let buildNo = getLatestBuildNoSync(project);
+		let status = getStatusSync(project, buildNo);
+
+		let projectDetail = {
+			name,
+			branch: "master",
+			commitHash: "e04c911",
+			timestamp: status.timestamp,
+			buildStatus: status.status
+		};
+
+		resp.json(projectDetail);
+	});
+
+app.get("/project-log/:projectName",
+	function (req, resp) {
+		let name = req.params.projectName;
+		const projects = require("./projects");
+		let project = _(projects).find({ name: name });
+		let buildNo = getLatestBuildNoSync(project);
+
+		let log = getLogSync(project, buildNo);
+
+		resp.json(log);
+	});
+
 app.post("/project-build/:projectName",
-	cors(),
 	function (req, resp) {
 		let projectName = req.params.projectName;
 
@@ -120,6 +132,10 @@ app.post("/project-build/:projectName",
 		resp.send("oki!!!");
 	});
 
+
+
+
+
 function createBuildContext(project) {
 	let sandbox = config.workspaces + "/" + escape(project.name);
 	let buildNo = getLatestBuildNoSync(project) + 1;
@@ -141,7 +157,7 @@ function createBuildContext(project) {
 	return ctx;
 }
 
-function getLogger(filename){
+function getLogger(filename) {
 	return new (winston.Logger)({
 		level: "info",
 		transports: [
@@ -169,20 +185,36 @@ function getLatestBuildNoSync(project) {
 	}
 }
 
-function getStatusSync(project) {
-	var latestBuildNo = getLatestBuildNoSync(project);
-	if (latestBuildNo === 0) return "never built";
-
+function getStatusSync(project, buildNo = 0) {
+	if (buildNo === 0) return { status: "never built", timestamp: null };
 	var sandbox = config.workspaces + "/" + escape(project.name);
 
-	let filename = path.join(sandbox, latestBuildNo.toString(), "buildstatus.txt");
+	let filename = path.join(sandbox, buildNo.toString(), "buildstatus.txt");
+	let stat = fs.statSync(filename);
+	let timestamp = stat.mtime;
 	let fd = fs.openSync(filename, "r");
 	let status = fs.readFileSync(fd);
 	fs.close(fd);
 
-	if (status == "completed") return "ok";
-	if (!status) return "unknown";
-	return status.toString();
+	if (status == "completed") return { status: "ok", timestamp };
+	if (!status) return { status: "unknown", timestamp };
+	return { status: status.toString(), timestamp };
+}
+
+function getLogSync(project, buildNo = 0) {
+	if (buildNo === 0) return [];
+	var sandbox = config.workspaces + "/" + escape(project.name);
+
+	let filename = path.join(sandbox, buildNo.toString(), "log.txt");
+
+	let log = fs.readFileSync(filename).toString().split("\n")
+		.filter(line => line)
+		.map(line => {
+			console.log(line);
+			return JSON.parse(line);
+		});
+
+	return log;
 }
 
 

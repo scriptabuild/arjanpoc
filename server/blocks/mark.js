@@ -8,7 +8,7 @@ function asStatus(status) {
 
         let transFn = ctx.transFn;
 
-        logger.info(`┏━━━━ marking ${ctx.project.name} as ${status}`);
+        logger.info(`┏━━━━ Marking ${ctx.project.name} as ${status}`);
 
         let filename = transFn(`%output%/buildstatus.txt`);
         let fd = fs.openSync(filename, "a");

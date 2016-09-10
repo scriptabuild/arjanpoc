@@ -1,13 +1,30 @@
 <template>
-	<span class="prompt">$</span> scriptabuild status --project "..." --build "..." --logs<br>
+	<span class="prompt">$</span> scriptabuild log --project "{{name}}"<br>
 	<br>
-	<div class="comment"># Not implemented yet</div>
+	<ul class="log">
+		<li v-for="line in log" class="{{line.level}}">
+			{{line.message}}
+		</li>
+	</ul>
 </template>
 
 <script>
+	import Vue from "vue";
 	export default {
 		name: "build-output",
-		data: () => ({})
+		data: () => ({
+			log: [],
+			name: ""
+		}),
+		init() {
+			this.name = this.$route.params.projectName;
+			fetch(`http://localhost:3000/project-log/${this.$route.params.projectName}`)
+				.then(resp => resp.json())
+				.then(log => {
+					this.log = log;
+					console.log(log);
+				});;
+		}
 	};
 </script>
 

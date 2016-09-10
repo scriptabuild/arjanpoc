@@ -1,33 +1,39 @@
 <template>
 	<span class="prompt">$</span> scriptabuild status --project "{{project.name}}"<br>
 	<br>
-	Latest build for master branch was ??? minutes ago (Commit hash: ??????)<br>
-	Status: <span class="status {{project.status}}">{{project.status}}</span><br>
+	Latest build for {{project.branch}} ({{project.commitHash}}) was {{fromNow(project.timestamp)}}<br>
+	Status: <span class="status {{project.buildStatusCss}}">{{project.buildStatus}}</span><br>
 	<br>
 	<button class="link" v-on:click="click">[Build now]</button><br>
-	<!--<a v-link="{name: 'build-logs', params: {projectName: project.name, buildId: ''}}">[View Log]</a><br>-->
-	<!--<br>
-	[Switch branch]<br>
-	[View earlier builds]<br>
-	<ul>
-		<li v-for="build in project.builds">
-			<a v-link="{name: 'build-detail', params: {projectName: project.name, commitId: build.commitId}}">
-			(Commit: {{build.commitId}}) [<span class="{{build.status}}">{{build.status}}</span>]
-			</a>
-		</li>
-	</ul>-->
+	<a v-link="{name: 'build-logs', params: {projectName: project.name, buildId: ''}}">[View Log]</a><br>
 </template>
 
 <script>
+	import Vue from "vue";
+	import moment from "moment";
 	export default {
 		name: "project-detail",
 		data: () => ({
 			project: {
-				name: undefined,
-				status: "unknown"
 			}
 		}),
+		init() {
+			fetch(`http://localhost:3000/project-detail/${this.$route.params.projectName}`)
+				.then(resp => resp.json())
+				.then(project => {
+					this.project = project
+					let styles = {
+						"never built": "unknown",
+						ok: "ok",
+						progress: "progress",
+						unknown: "unknown",
+						failed: "failed"
+					};
+					Vue.set(this.project, "buildStatusCss", styles[this.project.buildStatus]);
+				});;
+		},
 		methods: {
+			fromNow: timestamp => timestamp && moment(timestamp).fromNow(),
 			click() {
 				fetch(`http://localhost:3000/project-build/${this.$route.params.projectName}`, {
 						method: "POST",
@@ -43,13 +49,6 @@
 						console.log("Started build...")
 					})
 			}
-		},
-		init() {
-			fetch(`http://localhost:3000/project-detail/${this.$route.params.projectName}`)
-				.then(resp => resp.json())
-				.then(project => {
-					this.project.name = project.name
-				});
 		}
 	};
 </script>

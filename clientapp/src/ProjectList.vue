@@ -4,15 +4,18 @@
 	<ul>
 		<li v-for="project in projects">
 			<a v-link="{name: 'project-detail', params: { projectName: project.name}}">
-				{{project.name}} <span class="status {{project.buildStatusCss}}">{{project.buildStatus}}</span>
+				{{project.name}}
+				<span class="status {{project.buildStatusCss}}">{{project.status}}</span>
+				{{fromNow(project.timestamp)}}
 			</a>
 		</li>
 	</ul>
 </template>
 
 <script>
-	import Vue from "vue"
+	import Vue from "vue";
 	import _ from "lodash";
+	import moment from "moment";
 	export default {
 		name: "project-list",
 		data() {
@@ -25,11 +28,20 @@
 				.then(resp => resp.json())
 				.then(projects => this.projects = projects)
 				.then(() => {
-					let styles = {"never built": "unknown", ok:"ok", progress: "progress", unknown: "unknown", failed: "failed"};
-					for(var k in this.projects){
-						Vue.set(this.projects[k], "buildStatusCss", styles[this.projects[k].buildStatus]);
+					let styles = {
+						"never built": "unknown",
+						ok: "ok",
+						progress: "progress",
+						unknown: "unknown",
+						failed: "failed"
+					};
+					for (var k in this.projects) {
+						Vue.set(this.projects[k], "buildStatusCss", styles[this.projects[k].status]);
 					}
 				});
+		},
+		methods: {
+			fromNow: timestamp => timestamp && moment(timestamp).fromNow()
 		}
 	}
 </script>
