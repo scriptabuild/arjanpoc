@@ -3,7 +3,7 @@
 	<br>
 	<ul class="log">
 		<li v-for="line in log" class="{{line.level}}">
-			{{line.message}}
+			{{{spacify(line.message)}}}
 		</li>
 	</ul>
 </template>
@@ -24,6 +24,9 @@
 					this.log = log;
 					console.log(log);
 				});;
+		},
+		methods:{
+			spacify: message => message.replace(" ", "&nbsp;")
 		}
 	};
 </script>

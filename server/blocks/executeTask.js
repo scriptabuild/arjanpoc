@@ -7,7 +7,7 @@ const winston = require("winston");
 module.exports = function executeTask(tasks) {
     return function (ctx) {
         let logger = ctx.logger || winston.loggers.get("system");
-        let transFn = ctx.transFn || (obj=>obj);
+        let transFn = ctx.transFn || (obj => obj);
 
         if (Array.isArray(tasks)) {
             let pChain = Q(ctx);
@@ -56,20 +56,20 @@ function runSpawn(cmd, args, options) {
         return Q.promise(function (resolve, reject, notify) {
 
             logger.info("┏━━━━ Starting child process");
-            logger.info(`┃ "${cmd} ${args.join(" ")}"`, {options});
+            logger.info(`┃ "${cmd} ${args.join(" ")}"`, { options });
             // logger.info({ cmd, args, options });
 
             const proc = spawn(cmd, args, options);
 
             proc.stdout.on('data', data => {
-                logger.info({ stdout: `${data}` });
+                data.toString().split("\n").forEach(line => logger.info(`┃ ${line}`));
             });
 
             var message = "";
             proc.stderr.on('data', data => {
-                logger.info({ stderr: `${data}` });
+                data.toString().split("\n").forEach(line => logger.info(`┃ ${line}`));
 
-                message += data;
+                message += data + "\n";
             });
 
             proc.on('close', code => {
