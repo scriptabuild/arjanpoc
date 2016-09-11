@@ -67,7 +67,7 @@ function runSpawn(cmd, args, options) {
 
             var message = "";
             proc.stderr.on('data', data => {
-                data.toString().split("\n").forEach(line => logger.info(`┃ ${line}`));
+                data.toString().split("\n").forEach(line => logger.error(`┃ ${line}`));
 
                 message += data + "\n";
             });
