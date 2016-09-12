@@ -11,13 +11,17 @@ function asStatus(status) {
         logger.info(`┏━━━━ Marking ${ctx.project.name} as ${status}`);
 
         let filename = transFn(`%output%/buildstatus.txt`);
-        let fd = fs.openSync(filename, "a");
+        let fd = fs.openSync(filename, "w");
         fs.writeSync(fd, status);
         fs.close(fd);
 
         logger.info(`┗━━━━ Marked ${ctx.project.name} as ${status}`);
         return ctx
     }
+}
+
+exports.asStarted = function () {
+    return asStatus("started");
 }
 
 exports.asCompleted = function () {

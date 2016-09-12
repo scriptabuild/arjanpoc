@@ -26,7 +26,7 @@ body{
 .status.never.built{
 	color: #666;
 }
-.status.progress {
+.status.running {
 	color: #ffff00;
 }
 .status.ok{

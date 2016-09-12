@@ -25,7 +25,7 @@
 					let styles = {
 						"never built": "unknown",
 						ok: "ok",
-						progress: "progress",
+						running: "running",
 						unknown: "unknown",
 						failed: "failed"
 					};

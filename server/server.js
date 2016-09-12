@@ -107,12 +107,17 @@ app.post("/project-build/:projectName",
 		let ctx = createBuildContext(project);
 
 
+		// TODO: Refactor two first steps...
+		// - run CreateFolder sync
+		// - add logger before promise-chain
+
 		Q(ctx)
 			.then(createFolder("%output%"))
 			.then(ctx => {
 				ctx.logger = getLogger(ctx.transFn("%output%/log.txt"));
 				return ctx;
 			})
+			.then(mark.asStarted())
 			.then(git.load(project))
 			.then(executeTask(project.run))
 			// .then(log("Copying output files"))
@@ -131,7 +136,6 @@ app.post("/project-build/:projectName",
 		console.log("*** Starting the build for " + req.params.projectName);
 		resp.send("oki!!!");
 	});
-
 
 
 
@@ -197,6 +201,7 @@ function getStatusSync(project, buildNo = 0) {
 	fs.close(fd);
 
 	if (status == "completed") return { status: "ok", timestamp };
+	if (status == "started") return { status: "running", timestamp };
 	if (!status) return { status: "unknown", timestamp };
 	return { status: status.toString(), timestamp };
 }
