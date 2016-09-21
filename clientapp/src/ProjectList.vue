@@ -24,7 +24,7 @@
 			}
 		},
 		init() {
-			fetch("http://localhost:3000/project-list")
+			fetch("/api/project-list")
 				.then(resp => resp.json())
 				.then(projects => this.projects = projects)
 				.then(() => {

@@ -48,7 +48,7 @@ app.get("/app*", function (req, resp) {
 	resp.sendFile(__dirname + "/wwwroot/index.html");
 });
 
-app.get("/project-list",
+app.get("/api/project-list",
 	function (req, resp) {
 		const projects = require("./projects");
 
@@ -63,7 +63,7 @@ app.get("/project-list",
 		resp.json(results);
 	});
 
-app.get("/project-detail/:projectName",
+app.get("/api/project-detail/:projectName",
 	function (req, resp) {
 		let name = req.params.projectName;
 		const projects = require("./projects");
@@ -82,7 +82,7 @@ app.get("/project-detail/:projectName",
 		resp.json(projectDetail);
 	});
 
-app.get("/project-log/:projectName",
+app.get("/api/project-log/:projectName",
 	function (req, resp) {
 		let name = req.params.projectName;
 		const projects = require("./projects");
@@ -94,7 +94,7 @@ app.get("/project-log/:projectName",
 		resp.json(log);
 	});
 
-app.post("/project-build/:projectName",
+app.post("/api/project-build/:projectName",
 	function (req, resp) {
 		let projectName = req.params.projectName;
 

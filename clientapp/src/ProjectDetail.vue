@@ -18,7 +18,7 @@
 			}
 		}),
 		init() {
-			fetch(`http://localhost:3000/project-detail/${this.$route.params.projectName}`)
+			fetch(`/api/project-detail/${this.$route.params.projectName}`)
 				.then(resp => resp.json())
 				.then(project => {
 					this.project = project
@@ -35,7 +35,7 @@
 		methods: {
 			fromNow: timestamp => timestamp && moment(timestamp).fromNow(),
 			click() {
-				fetch(`http://localhost:3000/project-build/${this.$route.params.projectName}`, {
+				fetch(`/api/project-build/${this.$route.params.projectName}`, {
 						method: "POST",
 						mode: "cors"
 					})

@@ -18,7 +18,7 @@
 		}),
 		init() {
 			this.name = this.$route.params.projectName;
-			fetch(`http://localhost:3000/project-log/${this.$route.params.projectName}`)
+			fetch(`/api/project-log/${this.$route.params.projectName}`)
 				.then(resp => resp.json())
 				.then(log => {
 					this.log = log;
