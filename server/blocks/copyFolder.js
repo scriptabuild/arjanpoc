@@ -11,10 +11,10 @@ module.exports = function copyFolder(fromPath, toPath) {
         fromPath = transFn(fromPath);
         toPath = transFn(toPath);
 
-        logger.info(`┏━━━━ Copying folder "${fromPath}" to "${toPath}"`);
+        logger.info(ctx.hkey.key, `┏━━━━ Copying folder "${fromPath}" to "${toPath}"`);
         let promise = execCopyFolder(ctx, fromPath, toPath);
         return promise.then(function () {
-            logger.info(`┗━━━━ Copied folder "${fromPath}" to "${toPath}"`);
+            logger.info(ctx.hkey.key, `┗━━━━ Copied folder "${fromPath}" to "${toPath}"`);
             return ctx;
         });
     }
@@ -22,15 +22,15 @@ module.exports = function copyFolder(fromPath, toPath) {
 
 function execCopyFolder(ctx, fromPath, toPath) {
     let logger = ctx.logger || winston.loggers.get("system");
-    
+
     return Q.promise(function (resolve, reject, progress) {
 
         fsx.copy(fromPath, toPath, function (err) {
             if (err) {
-                // logger.info(`┃  "${path}" Failed creating`);
+                // logger.info(`(${ctx.hkey.key})┃  "${path}" Failed creating`), ctx.hkey.key;
                 reject(err);
             } else {
-                logger.info(`┃ "${fromPath}" copied to "${toPath}"`);
+                logger.info(ctx.hkey.key, `┃ "${fromPath}" copied to "${toPath}"`);
                 resolve();
             }
         });

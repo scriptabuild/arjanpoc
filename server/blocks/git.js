@@ -1,34 +1,29 @@
 const Q = require("q");
+const _ = require("lodash");
 const winston = require("winston");
 const ensureFolder = require("./ensureFolder");
 const _if = require("./_if");
 const executeTask = require("./executeTask");
-const {
-    // transform,
-    // isFile,
-    isDirectory
-} = require("../utils")
+const { isDirectory } = require("../utils")
 
 exports.load = function (project) {
 	return function (ctx) {
-        let logger = ctx.logger || winston.loggers.get("system");
+		let logger = ctx.logger || winston.loggers.get("system");
 		let transFn = ctx.transFn || (obj => obj);
 
-        logger.info(`┏━━━━ Loading from git "${project.source.url}"`);
-		var tlog = logger.info;
-		logger.info = msg => tlog("┃ " + msg);
+        logger.info(ctx.hkey.key, `┏━━━━ Loading from git "${project.source.url}"`);
 
-		return Q(ctx)
+		let childCtx = _.assignIn({}, ctx, { hkey: ctx.hkey.spawn() });
+		return Q(childCtx)
 			.then(ensureFolder("%build%"))
 			.then(_if(isDirectory(transFn("%build%/.git")), () =>
-				Q(ctx)
+				Q(childCtx)
 					.then(executeTask({ cmd: "git", args: ['reset', "--hard"], options: { cwd: "%build%" } }))
 					.then(executeTask({ cmd: "git", args: ['pull'], options: { cwd: "%build%" } })),
 				executeTask({ cmd: "git", args: ['clone', project.source.url, "%build%"], options: { cwd: "%sandbox%" } })))
 			.then(executeTask({ cmd: "git", args: ['checkout', 'HEAD'], options: { cwd: "%build%" } }))
 			.then(function () {
-				logger.info = tlog;
-				logger.info(`┗━━━━ Loaded from git "${project.source.url}"`);
+				logger.info(ctx.hkey.key, `┗━━━━ Loaded from git "${project.source.url}"`);
 				return ctx;
 			});
 	}

@@ -9,7 +9,7 @@ module.exports = function ensureFolder(path) {
         let transFn = ctx.transFn || (obj=>obj);
         path = transFn(path);
 
-        logger.info(`┏━━━━ Creating folder "${path}"`);
+        logger.info(ctx.hkey.key, `┏━━━━ Creating "${path}" folder`);
 
         let paths = createSubpaths(path);
 
@@ -19,7 +19,7 @@ module.exports = function ensureFolder(path) {
             pChain = pChain.then(fn);
         }
         return pChain.then(function () {
-            logger.info(`┗━━━━ Created "${path}" folder`);
+            logger.info(ctx.hkey.key, `┗━━━━ Created "${path}" folder`);
             return ctx;
         });
     }
@@ -49,7 +49,7 @@ function execCreateFolder(ctx, path, mask) {
                 } else if (err) {
                     reject(err);
                 } else {
-                    logger.info(`┃ "${path}" created`);
+                    logger.info(ctx.hkey.key, `┃ "${path}" created`);
                     resolve(path);
                 }
             });

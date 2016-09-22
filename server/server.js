@@ -3,7 +3,7 @@ const cors = require("cors");
 const bodyparser = require("body-parser");
 const _ = require("lodash");
 const Q = require("q");
-const createFolder = require("./blocks/ensureFolder");
+const ensureFolder = require("./blocks/ensureFolder");
 const copyFolder = require("./blocks/copyFolder");
 const executeTask = require("./blocks/executeTask");
 const log = require("./blocks/log");
@@ -15,8 +15,7 @@ const {
     transform
     // isFile,
     // isDirectory
-} = require("./utils")
-const winston = require("winston");
+} = require("./utils");
 const fs = require("fs");
 const path = require("path");
 const readline = require("readline");
@@ -24,6 +23,8 @@ const readline = require("readline");
 const config = require("./config");
 const projects = require("./projects");
 
+const HKeyGenerator = require("hkey-generator");
+const winston = require("winston");
 var logger = new winston.Logger({
     transports: [
         new winston.transports.Console({ level: "error" }),
@@ -112,7 +113,7 @@ app.post("/api/project-build/:projectName",
 		// - add logger before promise-chain
 
 		Q(ctx)
-			.then(createFolder("%output%"))
+			.then(ensureFolder("%output%"))
 			.then(ctx => {
 				ctx.logger = getLogger(ctx.transFn("%output%/log.txt"));
 				return ctx;
@@ -152,6 +153,7 @@ function createBuildContext(project) {
 	};
 
 	let ctx = {
+		hkey: new HKeyGenerator(),
 		project,
 		paths,
 		logger: winston.loggers.get("system"),
@@ -214,10 +216,7 @@ function getLogSync(project, buildNo = 0) {
 
 	let log = fs.readFileSync(filename).toString().split("\n")
 		.filter(line => line)
-		.map(line => {
-			console.log(line);
-			return JSON.parse(line);
-		});
+		.map(line => JSON.parse(line));
 
 	return log;
 }
@@ -226,14 +225,17 @@ function getLogSync(project, buildNo = 0) {
 
 
 // Server STARTUP code
-Q({ transFn: obj => obj })
+Q({ hkey: new HKeyGenerator(), transFn: obj => obj })
     .then(log("Starting Scriptabuild"))
-    .then(createFolder(config.logs))
-	.then(() => app.listen(3000, function () {
-		console.log();
-		console.log('Scriptabuild http server listening on port 3000!');
-		console.log();
-	}))
+    .then(ensureFolder(config.logs))
+	.then(ctx => {
+		app.listen(3000, function () {
+			console.log();
+			console.log('Scriptabuild http server listening on port 3000!');
+			console.log();
+		});
+		return ctx;
+	})
     .then(log("Scripts completed successfully"))
     .catch(err => console.error("Scripts failed", err));
 

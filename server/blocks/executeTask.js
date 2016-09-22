@@ -10,12 +10,18 @@ module.exports = function executeTask(tasks) {
         let transFn = ctx.transFn || (obj => obj);
 
         if (Array.isArray(tasks)) {
-            let pChain = Q(ctx);
+            logger.info(ctx.hkey.key, `┏━━━━ Starting child processes`);
+
+            let childCtx = _.assignIn({}, ctx, { hkey: ctx.hkey.spawn() });
+            let pChain = Q( childCtx );
             for (let task of tasks) {
                 var fn = getPreparedExecSpawnFunction(task, transFn);
                 pChain = pChain.then(fn);
             }
-            return pChain;
+            return pChain.then(function() {
+                logger.info(ctx.hkey.key, `┗━━━━ Finished running child processes`);
+                return ctx;
+            });
         }
         else {
             var fn = getPreparedExecSpawnFunction(tasks, transFn);
@@ -51,33 +57,34 @@ function resolveParams(task) {
 
 function runSpawn(cmd, args, options) {
     return function (ctx) {
+        let hkey = ctx.hkey;
         let logger = ctx.logger || winston.loggers.get("system");
 
         return Q.promise(function (resolve, reject, notify) {
 
-            logger.info("┏━━━━ Starting child process");
-            logger.info(`┃ "${cmd} ${args.join(" ")}"`, { options });
+            logger.info(hkey.key, `┏━━━━ Starting child process`);
+            logger.info(hkey.key, `┃ "${cmd} ${args.join(" ")}"`);
             // logger.info({ cmd, args, options });
 
             const proc = spawn(cmd, args, options);
 
             proc.stdout.on('data', data => {
-                data.toString().split("\n").forEach(line => logger.info(`┃ ${line}`));
+                data.toString().split("\n").forEach(line => logger.info(hkey.key, `┃ ${line}`));
             });
 
             var message = "";
             proc.stderr.on('data', data => {
-                data.toString().split("\n").forEach(line => logger.error(`┃ ${line}`));
+                data.toString().split("\n").forEach(line => logger.error(hkey.key, `┃ ${line}`));
 
                 message += data + "\n";
             });
 
             proc.on('close', code => {
                 if (code == 0) {
-                    logger.info(`┗━━━━ Child process exited with code 0`);
+                    logger.info(hkey.key, `┗━━━━ Child process exited with code 0`);
                     resolve(ctx);
                 } else {
-                    logger.error(`┗━━━━ Child process exited with code ${code}`);
+                    logger.error(hkey.key, `┗━━━━ Child process exited with code ${code}`);
                     reject({ name: "ChildProcessError", message, code });
                 }
             });

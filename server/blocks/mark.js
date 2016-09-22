@@ -8,14 +8,14 @@ function asStatus(status) {
 
         let transFn = ctx.transFn;
 
-        logger.info(`┏━━━━ Marking ${ctx.project.name} as ${status}`);
+        logger.info(ctx.hkey.key, `┏━━━━ Marking ${ctx.project.name} as ${status}`);
 
         let filename = transFn(`%output%/buildstatus.txt`);
         let fd = fs.openSync(filename, "w");
         fs.writeSync(fd, status);
         fs.close(fd);
 
-        logger.info(`┗━━━━ Marked ${ctx.project.name} as ${status}`);
+        logger.info(ctx.hkey.key, `┗━━━━ Marked ${ctx.project.name} as ${status}`);
         return ctx
     }
 }
