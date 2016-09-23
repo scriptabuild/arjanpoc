@@ -10,16 +10,18 @@ module.exports = function executeTask(tasks) {
         let transFn = ctx.transFn || (obj => obj);
 
         if (Array.isArray(tasks)) {
-            logger.info(ctx.hkey.key, `┏━━━━ Starting child processes`);
+    		let hkey = ctx.hkey.spawn();
 
-            let childCtx = _.assignIn({}, ctx, { hkey: ctx.hkey.spawn() });
+            logger.info(hkey.key, `┏━━━━ Starting child processes`);
+
+            let childCtx = _.assignIn({}, ctx, { hkey });
             let pChain = Q( childCtx );
             for (let task of tasks) {
                 var fn = getPreparedExecSpawnFunction(task, transFn);
                 pChain = pChain.then(fn);
             }
             return pChain.then(function() {
-                logger.info(ctx.hkey.key, `┗━━━━ Finished running child processes`);
+                logger.info(hkey.key, `┗━━━━ Finished running child processes`);
                 return ctx;
             });
         }
@@ -57,7 +59,7 @@ function resolveParams(task) {
 
 function runSpawn(cmd, args, options) {
     return function (ctx) {
-        let hkey = ctx.hkey;
+        let hkey = ctx.hkey.spawn();
         let logger = ctx.logger || winston.loggers.get("system");
 
         return Q.promise(function (resolve, reject, notify) {

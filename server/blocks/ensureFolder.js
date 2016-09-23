@@ -5,21 +5,22 @@ const winston = require("winston");
 
 module.exports = function ensureFolder(path) {
     return function (ctx) {
+		let hkey = ctx.hkey.spawn();
         let logger = ctx.logger || winston.loggers.get("system");
         let transFn = ctx.transFn || (obj=>obj);
         path = transFn(path);
 
-        logger.info(ctx.hkey.key, `┏━━━━ Creating "${path}" folder`);
+        logger.info(hkey.key, `┏━━━━ Creating "${path}" folder`);
 
         let paths = createSubpaths(path);
 
-        let pChain = Q();
+        let pChain = Q(ctx);
         for (let path of paths) {
             var fn = execCreateFolder(ctx, path);
             pChain = pChain.then(fn);
         }
         return pChain.then(function () {
-            logger.info(ctx.hkey.key, `┗━━━━ Created "${path}" folder`);
+            logger.info(hkey.key, `┗━━━━ Created "${path}" folder`);
             return ctx;
         });
     }
@@ -37,6 +38,7 @@ function createSubpaths(path) {
 
 function execCreateFolder(ctx, path, mask) {
     return function () {
+        let hkey = ctx.hkey;
         let logger = ctx.logger || winston.loggers.get("system");
         
         return Q.promise(function (resolve, reject, progress) {
@@ -49,7 +51,7 @@ function execCreateFolder(ctx, path, mask) {
                 } else if (err) {
                     reject(err);
                 } else {
-                    logger.info(ctx.hkey.key, `┃ "${path}" created`);
+                    logger.info(hkey.key, `┃ "${path}" created`);
                     resolve(path);
                 }
             });

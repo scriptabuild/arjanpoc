@@ -8,12 +8,13 @@ const { isDirectory } = require("../utils")
 
 exports.load = function (project) {
 	return function (ctx) {
+		let hkey = ctx.hkey.spawn();
 		let logger = ctx.logger || winston.loggers.get("system");
 		let transFn = ctx.transFn || (obj => obj);
 
-        logger.info(ctx.hkey.key, `┏━━━━ Loading from git "${project.source.url}"`);
+        logger.info(hkey.key, `┏━━━━ Loading from git "${project.source.url}"`);
 
-		let childCtx = _.assignIn({}, ctx, { hkey: ctx.hkey.spawn() });
+		let childCtx = _.assignIn({}, ctx, { hkey });
 		return Q(childCtx)
 			.then(ensureFolder("%build%"))
 			.then(_if(isDirectory(transFn("%build%/.git")), () =>
@@ -23,7 +24,7 @@ exports.load = function (project) {
 				executeTask({ cmd: "git", args: ['clone', project.source.url, "%build%"], options: { cwd: "%sandbox%" } })))
 			.then(executeTask({ cmd: "git", args: ['checkout', 'HEAD'], options: { cwd: "%build%" } }))
 			.then(function () {
-				logger.info(ctx.hkey.key, `┗━━━━ Loaded from git "${project.source.url}"`);
+				logger.info(hkey.key, `┗━━━━ Loaded from git "${project.source.url}"`);
 				return ctx;
 			});
 	}

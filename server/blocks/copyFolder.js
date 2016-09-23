@@ -6,15 +6,16 @@ const winston = require("winston");
 
 module.exports = function copyFolder(fromPath, toPath) {
     return function (ctx) {
+		let hkey = ctx.hkey.spawn();
         let logger = ctx.logger || winston.loggers.get("system");
         let transFn = ctx.transFn || (obj => obj);
         fromPath = transFn(fromPath);
         toPath = transFn(toPath);
 
-        logger.info(ctx.hkey.key, `┏━━━━ Copying folder "${fromPath}" to "${toPath}"`);
+        logger.info(hkey.key, `┏━━━━ Copying folder "${fromPath}" to "${toPath}"`);
         let promise = execCopyFolder(ctx, fromPath, toPath);
         return promise.then(function () {
-            logger.info(ctx.hkey.key, `┗━━━━ Copied folder "${fromPath}" to "${toPath}"`);
+            logger.info(hkey.key, `┗━━━━ Copied folder "${fromPath}" to "${toPath}"`);
             return ctx;
         });
     }

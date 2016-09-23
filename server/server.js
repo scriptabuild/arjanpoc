@@ -153,7 +153,7 @@ function createBuildContext(project) {
 	};
 
 	let ctx = {
-		hkey: new HKeyGenerator(),
+		hkey: new HKeyGenerator([]),
 		project,
 		paths,
 		logger: winston.loggers.get("system"),
@@ -225,7 +225,7 @@ function getLogSync(project, buildNo = 0) {
 
 
 // Server STARTUP code
-Q({ hkey: new HKeyGenerator(), transFn: obj => obj })
+Q({ hkey: new HKeyGenerator([]), transFn: obj => obj })
     .then(log("Starting Scriptabuild"))
     .then(ensureFolder(config.logs))
 	.then(ctx => {
