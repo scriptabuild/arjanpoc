@@ -21,10 +21,12 @@ const HKeyGenerator = require("hkey-generator");
 const winston = require("winston");
 
 var logger = new winston.Logger({
-    transports: [
-        new winston.transports.Console({ level: "error" }),
-        // new winston.transports.File({ filename: `${config.logs}/${project.name}/logfile.json`, level: "silly"})
-    ]
+	transports: [
+		new winston.transports.Console({
+			level: "error"
+		}),
+		// new winston.transports.File({ filename: `${config.logs}/${project.name}/logfile.json`, level: "silly"})
+	]
 });
 winston.loggers.add("system");
 
@@ -36,7 +38,9 @@ const projects = require("./projects");
 // setup EXPRESS application
 
 var app = express();
-app.use("/app", express.static(__dirname + "/wwwroot", { extensions: ["js", "css", "jpg", "png"] }));
+app.use("/app", express.static(__dirname + "/wwwroot", {
+	extensions: ["js", "css", "jpg", "png"]
+}));
 app.use(cors());
 // app.use(cors({ allowedOrigins: "*" }));
 
@@ -56,7 +60,11 @@ app.get("/api/project-list",
 			.map(p => {
 				let buildNo = getLatestBuildNoSync(p);
 				let status = getStatusSync(p, buildNo);
-				return { name: p.name, status: status.status, timestamp: status.timestamp };
+				return {
+					name: p.name,
+					status: status.status,
+					timestamp: status.timestamp
+				};
 			})
 			.value();
 
@@ -67,7 +75,9 @@ app.get("/api/project-detail/:projectName",
 	function (req, resp) {
 		let name = req.params.projectName;
 		const projects = require("./projects");
-		let project = _(projects).find({ name: name });
+		let project = _(projects).find({
+			name: name
+		});
 		let buildNo = getLatestBuildNoSync(project);
 		let status = getStatusSync(project, buildNo);
 
@@ -86,7 +96,9 @@ app.get("/api/project-log/:projectName",
 	function (req, resp) {
 		let name = req.params.projectName;
 		const projects = require("./projects");
-		let project = _(projects).find({ name: name });
+		let project = _(projects).find({
+			name: name
+		});
 		let buildNo = getLatestBuildNoSync(project);
 
 		let log = getLogSync(project, buildNo);
@@ -155,11 +167,13 @@ function createBuildContext(project) {
 }
 
 function getLogger(filename) {
-	return new (winston.Logger)({
+	return new(winston.Logger)({
 		level: "info",
 		transports: [
-			new (winston.transports.Console)(),
-			new (winston.transports.File)({ filename })
+			new(winston.transports.Console)(),
+			new(winston.transports.File)({
+				filename
+			})
 		]
 	});
 }
@@ -176,14 +190,16 @@ function getLatestBuildNoSync(project) {
 			return 0;
 		}
 		return Math.max.apply(Math, files);
-	}
-	catch (err) {
+	} catch (err) {
 		return 0;
 	}
 }
 
 function getStatusSync(project, buildNo = 0) {
-	if (buildNo === 0) return { status: "never built", timestamp: null };
+	if (buildNo === 0) return {
+		status: "never built",
+		timestamp: null
+	};
 	var sandbox = config.workspaces + "/" + escape(project.name);
 
 	let filename = path.join(sandbox, buildNo.toString(), "buildstatus.txt");
@@ -193,10 +209,22 @@ function getStatusSync(project, buildNo = 0) {
 	let status = fs.readFileSync(fd);
 	fs.close(fd);
 
-	if (status == "completed") return { status: "ok", timestamp };
-	if (status == "started") return { status: "running", timestamp };
-	if (!status) return { status: "unknown", timestamp };
-	return { status: status.toString(), timestamp };
+	if (status == "completed") return {
+		status: "ok",
+		timestamp
+	};
+	if (status == "started") return {
+		status: "running",
+		timestamp
+	};
+	if (!status) return {
+		status: "unknown",
+		timestamp
+	};
+	return {
+		status: status.toString(),
+		timestamp
+	};
 }
 
 function getLogSync(project, buildNo = 0) {
@@ -216,17 +244,9 @@ function getLogSync(project, buildNo = 0) {
 
 
 // Server STARTUP code
-Q({ hkey: new HKeyGenerator([]), transFn: obj => obj })
-    .then(log("Starting Scriptabuild"))
-    .then(ensureFolder(config.logs))
-	.then(ctx => {
-		app.listen(3000, function () {
-			console.log();
-			console.log('Scriptabuild http server listening on port 3000!');
-			console.log();
-		});
-		return ctx;
-	})
-    .then(log("Scripts completed successfully"))
-    .catch(err => console.error("Scripts failed", err));
 
+console.log("Starting Scriptabuild");
+ensureFolderSync(config.logs);
+app.listen(3000, function () {
+	console.log('Scriptabuild http server listening on port 3000!');
+});
