@@ -1,7 +1,7 @@
 <template>
 	<span class="prompt">$</span> scriptabuild status --project "{{project.name}}"<br>
 	<br>
-	Latest build for {{project.branch}} ({{project.commitHash}}) was {{fromNow(project.timestamp)}}<br>
+	Latest activity for {{project.branch}} ({{project.commitHash}}) was {{fromNow(project.timestamp)}}<br>
 	Status: <span class="status {{project.buildStatusCss}}">{{project.buildStatus}}</span><br>
 	<br>
 	<button class="link" v-on:click="click">[Build now]</button><br>

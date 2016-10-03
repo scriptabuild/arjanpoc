@@ -11,20 +11,15 @@ const _if = require("./blocks/_if");
 const block = require("./blocks/block");
 const git = require("./blocks/git");
 const mark = require("./blocks/mark");
-const {
-    transform
-    // isFile,
-    // isDirectory
-} = require("./utils");
+
+const ensureFolderSync = require("./buildContextUtils/ensureFolderSync");
+const transform = require("./buildContextUtils/transform");
 const fs = require("fs");
 const path = require("path");
 const readline = require("readline");
-
-const config = require("./config");
-const projects = require("./projects");
-
 const HKeyGenerator = require("hkey-generator");
 const winston = require("winston");
+
 var logger = new winston.Logger({
     transports: [
         new winston.transports.Console({ level: "error" }),
@@ -32,6 +27,10 @@ var logger = new winston.Logger({
     ]
 });
 winston.loggers.add("system");
+
+const config = require("./config");
+const projects = require("./projects");
+
 
 
 // setup EXPRESS application
@@ -100,24 +99,13 @@ app.post("/api/project-build/:projectName",
 		let projectName = req.params.projectName;
 
 		// TODO: Trigger the build. Similar to a webhook
-		// - set up logging
 		// let commitId;
 		// let branchname;
 
 		let project = projects.find(p => p.name == projectName);
 		let ctx = createBuildContext(project);
 
-
-		// TODO: Refactor two first steps...
-		// - run CreateFolder sync
-		// - add logger before promise-chain
-
 		Q(ctx)
-			.then(ensureFolder("%output%"))
-			.then(ctx => {
-				ctx.logger = getLogger(ctx.transFn("%output%/log.txt"));
-				return ctx;
-			})
 			.then(mark.asStarted())
 			.then(git.load(project))
 			.then(executeTask(project.run))
@@ -144,19 +132,22 @@ app.post("/api/project-build/:projectName",
 function createBuildContext(project) {
 	let sandbox = config.workspaces + "/" + escape(project.name);
 	let buildNo = getLatestBuildNoSync(project) + 1;
+	let output = path.join(sandbox, buildNo.toString())
+
+	ensureFolderSync(output);
 
 	let paths = {
 		sandbox,
 		buildNo,
 		build: path.join(sandbox, "build"),
-		output: path.join(sandbox, buildNo.toString())
+		output
 	};
 
 	let ctx = {
 		hkey: new HKeyGenerator([]),
 		project,
 		paths,
-		logger: winston.loggers.get("system"),
+		logger: getLogger(`${output}/log.txt`),
 		transFn: obj => transform(obj, paths, 10)
 	};
 

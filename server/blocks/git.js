@@ -4,7 +4,7 @@ const winston = require("winston");
 const ensureFolder = require("./ensureFolder");
 const _if = require("./_if");
 const executeTask = require("./executeTask");
-const { isDirectory } = require("../utils")
+const { isDirectory } = require("./utils")
 
 exports.load = function (project) {
 	return function (ctx) {
