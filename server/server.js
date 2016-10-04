@@ -1,34 +1,27 @@
 const express = require("express");
 const cors = require("cors");
-const bodyparser = require("body-parser");
+// const bodyparser = require("body-parser");
 const _ = require("lodash");
 const Q = require("q");
+
 const ensureFolder = require("./blocks/ensureFolder");
 const copyFolder = require("./blocks/copyFolder");
 const executeTask = require("./blocks/executeTask");
 const log = require("./blocks/log");
-const _if = require("./blocks/_if");
+// const _if = require("./blocks/_if");
 const block = require("./blocks/block");
 const git = require("./blocks/git");
 const mark = require("./blocks/mark");
 
 const ensureFolderSync = require("./buildContextUtils/ensureFolderSync");
-const transform = require("./buildContextUtils/transform");
-const fs = require("fs");
-const path = require("path");
-const readline = require("readline");
-const HKeyGenerator = require("hkey-generator");
-const winston = require("winston");
+const getLatestBuildNoSync = require("./buildContextUtils/getLatestBuildNoSync");
+const createBuildContext = require("./buildContextUtils/createBuildContext");
 
-var logger = new winston.Logger({
-	transports: [
-		new winston.transports.Console({
-			level: "error"
-		}),
-		// new winston.transports.File({ filename: `${config.logs}/${project.name}/logfile.json`, level: "silly"})
-	]
-});
-winston.loggers.add("system");
+const getStatusSync = require("./getStatusSync");
+const getLogSync = require("./getLogSync");
+
+
+
 
 const config = require("./config");
 const projects = require("./projects");
@@ -58,8 +51,9 @@ app.get("/api/project-list",
 
 		results = _(projects)
 			.map(p => {
-				let buildNo = getLatestBuildNoSync(p);
-				let status = getStatusSync(p, buildNo);
+				let buildNo = getLatestBuildNoSync(config, p);
+				let status = getStatusSync(config, p, buildNo);
+				console.log(buildNo, status);
 				return {
 					name: p.name,
 					status: status.status,
@@ -78,8 +72,8 @@ app.get("/api/project-detail/:projectName",
 		let project = _(projects).find({
 			name: name
 		});
-		let buildNo = getLatestBuildNoSync(project);
-		let status = getStatusSync(project, buildNo);
+		let buildNo = getLatestBuildNoSync(config, project);
+		let status = getStatusSync(config, project, buildNo);
 
 		let projectDetail = {
 			name,
@@ -99,9 +93,9 @@ app.get("/api/project-log/:projectName",
 		let project = _(projects).find({
 			name: name
 		});
-		let buildNo = getLatestBuildNoSync(project);
+		let buildNo = getLatestBuildNoSync(config, project);
 
-		let log = getLogSync(project, buildNo);
+		let log = getLogSync(config, project, buildNo);
 
 		resp.json(log);
 	});
@@ -115,7 +109,7 @@ app.post("/api/project-build/:projectName",
 		// let branchname;
 
 		let project = projects.find(p => p.name == projectName);
-		let ctx = createBuildContext(project);
+		let ctx = createBuildContext(config, project);
 
 		Q(ctx)
 			.then(mark.asStarted())
@@ -139,106 +133,10 @@ app.post("/api/project-build/:projectName",
 	});
 
 
+// *** TODO: Move some of the following to buildContextUtils and other folders!!! ***
 
 
-function createBuildContext(project) {
-	let sandbox = config.workspaces + "/" + escape(project.name);
-	let buildNo = getLatestBuildNoSync(project) + 1;
-	let output = path.join(sandbox, buildNo.toString())
 
-	ensureFolderSync(output);
-
-	let paths = {
-		sandbox,
-		buildNo,
-		build: path.join(sandbox, "build"),
-		output
-	};
-
-	let ctx = {
-		hkey: new HKeyGenerator([]),
-		project,
-		paths,
-		logger: getLogger(`${output}/log.txt`),
-		transFn: obj => transform(obj, paths, 10)
-	};
-
-	return ctx;
-}
-
-function getLogger(filename) {
-	return new(winston.Logger)({
-		level: "info",
-		transports: [
-			new(winston.transports.Console)(),
-			new(winston.transports.File)({
-				filename
-			})
-		]
-	});
-}
-
-function getLatestBuildNoSync(project) {
-	var sandbox = config.workspaces + "/" + escape(project.name);
-	try {
-		var files = fs.readdirSync(sandbox)
-		files = files
-			.filter(n => !isNaN(n))
-			.filter(file => fs.statSync(path.join(sandbox, file)).isDirectory());
-
-		if (files.length === 0) {
-			return 0;
-		}
-		return Math.max.apply(Math, files);
-	} catch (err) {
-		return 0;
-	}
-}
-
-function getStatusSync(project, buildNo = 0) {
-	if (buildNo === 0) return {
-		status: "never built",
-		timestamp: null
-	};
-	var sandbox = config.workspaces + "/" + escape(project.name);
-
-	let filename = path.join(sandbox, buildNo.toString(), "buildstatus.txt");
-	let stat = fs.statSync(filename);
-	let timestamp = stat.mtime;
-	let fd = fs.openSync(filename, "r");
-	let status = fs.readFileSync(fd);
-	fs.close(fd);
-
-	if (status == "completed") return {
-		status: "ok",
-		timestamp
-	};
-	if (status == "started") return {
-		status: "running",
-		timestamp
-	};
-	if (!status) return {
-		status: "unknown",
-		timestamp
-	};
-	return {
-		status: status.toString(),
-		timestamp
-	};
-}
-
-function getLogSync(project, buildNo = 0) {
-	if (buildNo === 0) return [];
-	var sandbox = config.workspaces + "/" + escape(project.name);
-
-	let filename = path.join(sandbox, buildNo.toString(), "log.txt");
-
-	let log = fs.readFileSync(filename).toString().split("\n")
-		.filter(line => line)
-		.map(line => JSON.parse(line));
-
-	return log;
-}
 
 
 
