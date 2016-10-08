@@ -1,7 +1,7 @@
 const fs = require("fs");
 const path = require("path");
 
-module.exports = function getLatestBuildNoSync(config, project) {
+function getAllBuildNosSync(config, project) {
 	var sandbox = config.workspaces + "/" + escape(project.name);
 	try {
 		var files = fs.readdirSync(sandbox)
@@ -12,8 +12,23 @@ module.exports = function getLatestBuildNoSync(config, project) {
 		if (files.length === 0) {
 			return 0;
 		}
-		return Math.max.apply(Math, files);
+		return files;
 	} catch (err) {
+		return [];
+	}
+}
+
+function getLatestBuildNoSync(config, project) {
+	files = getAllBuildNosSync(config, project);
+	if (files.length === 0) {
 		return 0;
 	}
+	return Math.max.apply(Math, files);
+}
+
+
+
+module.exports = {
+	getAllBuildNosSync,
+	getLatestBuildNoSync
 }

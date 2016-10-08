@@ -22,6 +22,7 @@
 				.then(resp => resp.json())
 				.then(log => {
 					this.log = log;
+					this.name= this.$route.params.projectName;
 					console.log(log);
 				});;
 		},

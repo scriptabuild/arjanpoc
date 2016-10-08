@@ -9,13 +9,12 @@ const ensureFolder = require("./blocks/ensureFolder");
 const copyFolder = require("./blocks/copyFolder");
 const executeTask = require("./blocks/executeTask");
 const log = require("./blocks/log");
-// const _if = require("./blocks/_if");
 const block = require("./blocks/block");
 const git = require("./blocks/git");
 const mark = require("./blocks/mark");
 
 const ensureFolderSync = require("./buildContextUtils/ensureFolderSync");
-const getLatestBuildNoSync = require("./buildContextUtils/getLatestBuildNoSync");
+const {getLatestBuildNoSync} = require("./dataUtils/buildNo");
 const createBuildContext = require("./buildContextUtils/createBuildContext");
 
 const getStatusSync = require("./getStatusSync");
@@ -32,6 +31,7 @@ var app = express();
 app.use("/app", express.static(path.join(__dirname, "wwwroot"), {
 	extensions: ["js", "css", "jpg", "png"]
 }));
+
 app.use(cors());
 // app.use(cors({ allowedOrigins: "*" }));
 

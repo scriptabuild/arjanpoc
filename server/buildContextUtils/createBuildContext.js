@@ -2,7 +2,7 @@ const winston = require("winston");
 const path = require("path");
 const ensureFolderSync = require("./ensureFolderSync");
 const transform = require("./transform");
-const getLatestBuildNoSync = require("./getLatestBuildNoSync");
+const {getLatestBuildNoSync} = require("../dataUtils/buildNo");
 const HKeyGenerator = require("hkey-generator");
 
 
