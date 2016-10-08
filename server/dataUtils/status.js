@@ -1,7 +1,7 @@
 const path = require("path");
 const fs = require("fs");
 
-module.exports = function getStatusSync(config, project, buildNo = 0) {
+function getStatusSync(config, project, buildNo = 0) {
 	if (buildNo === 0) return {
 		status: "never built",
 		timestamp: null
@@ -31,4 +31,8 @@ module.exports = function getStatusSync(config, project, buildNo = 0) {
 		status: status.toString(),
 		timestamp
 	};
+}
+
+module.exports = {
+	getStatusSync
 }

@@ -14,11 +14,10 @@ const git = require("./blocks/git");
 const mark = require("./blocks/mark");
 
 const ensureFolderSync = require("./buildContextUtils/ensureFolderSync");
-const {getLatestBuildNoSync} = require("./dataUtils/buildNo");
 const createBuildContext = require("./buildContextUtils/createBuildContext");
-
-const getStatusSync = require("./getStatusSync");
-const getLogSync = require("./getLogSync");
+const {getLatestBuildNoSync} = require("./dataUtils/buildNo");
+const {getStatusSync} = require("./dataUtils/status");
+const {getLogSync} = require("./dataUtils/log");
 
 const config = require("./config");
 const projects = require("./projects");

@@ -1,7 +1,7 @@
 const path = require("path");
 const fs = require("fs");
 
-module.exports = function getLogSync(config, project, buildNo = 0) {
+function getLogSync(config, project, buildNo = 0) {
 	if (buildNo === 0) return [];
 	var sandbox = config.workspaces + "/" + escape(project.name);
 
@@ -12,4 +12,9 @@ module.exports = function getLogSync(config, project, buildNo = 0) {
 		.map(line => JSON.parse(line));
 
 	return log;
+}
+
+
+module.exports = {
+	getLogSync
 }
