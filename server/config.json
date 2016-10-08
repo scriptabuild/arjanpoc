@@ -1,5 +1,6 @@
 {
-	"root": "/Users/arjan/Documents/temp/scriptabuild",
-	"logs": "/Users/arjan/Documents/temp/scriptabuild/logs",
-	"workspaces": "/Users/arjan/Documents/temp/scriptabuild/workspaces"
+	"http": {
+		"port": 3000
+	},
+	"workingDirectory": "/Users/arjan/Documents/temp/scriptabuild"
 }

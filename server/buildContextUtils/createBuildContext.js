@@ -2,13 +2,15 @@ const winston = require("winston");
 const path = require("path");
 const ensureFolderSync = require("./ensureFolderSync");
 const transform = require("./transform");
+const {getProjectSandbox} = require("../dataUtils/projectSandbox");
 const {getLatestBuildNoSync} = require("../dataUtils/buildNo");
 const HKeyGenerator = require("hkey-generator");
 
 
 module.exports = function createBuildContext(config, project) {
-	let sandbox = config.workspaces + "/" + escape(project.name);
-	let buildNo = getLatestBuildNoSync(config, project) + 1;
+	let sandbox = path.join(config.workingDirectory, "workspaces", escape(project.name));
+
+	let buildNo = getLatestBuildNoSync(sandbox) + 1;
 	let output = path.join(sandbox, buildNo.toString())
 
 	ensureFolderSync(output);

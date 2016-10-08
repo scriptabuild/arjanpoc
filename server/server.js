@@ -15,9 +15,18 @@ const mark = require("./blocks/mark");
 
 const ensureFolderSync = require("./buildContextUtils/ensureFolderSync");
 const createBuildContext = require("./buildContextUtils/createBuildContext");
-const {getLatestBuildNoSync} = require("./dataUtils/buildNo");
-const {getStatusSync} = require("./dataUtils/status");
-const {getLogSync} = require("./dataUtils/log");
+const {
+	getProjectSandbox
+} = require("./dataUtils/projectSandbox")
+const {
+	getLatestBuildNoSync
+} = require("./dataUtils/buildNo");
+const {
+	getStatusSync
+} = require("./dataUtils/status");
+const {
+	getLogSync
+} = require("./dataUtils/log");
 
 const config = require("./config");
 const projects = require("./projects");
@@ -48,8 +57,10 @@ app.get("/api/project-list",
 
 		results = _(projects)
 			.map(p => {
-				let buildNo = getLatestBuildNoSync(config, p);
-				let status = getStatusSync(config, p, buildNo);
+				var projectSandbox = getProjectSandbox(config, p);
+
+				let buildNo = getLatestBuildNoSync(projectSandbox);
+				let status = getStatusSync(projectSandbox, buildNo);
 				return {
 					name: p.name,
 					status: status.status,
@@ -68,8 +79,10 @@ app.get("/api/project-detail/:projectName",
 		let project = _(projects).find({
 			name: name
 		});
-		let buildNo = getLatestBuildNoSync(config, project);
-		let status = getStatusSync(config, project, buildNo);
+
+		var projectSandbox = getProjectSandbox(config, project);
+		let buildNo = getLatestBuildNoSync(projectSandbox);
+		let status = getStatusSync(projectSandbox, buildNo);
 
 		let projectDetail = {
 			name,
@@ -89,9 +102,11 @@ app.get("/api/project-log/:projectName",
 		let project = _(projects).find({
 			name: name
 		});
-		let buildNo = getLatestBuildNoSync(config, project);
 
-		let log = getLogSync(config, project, buildNo);
+		var projectSandbox = getProjectSandbox(config, project);
+		let buildNo = getLatestBuildNoSync(projectSandbox);
+
+		let log = getLogSync(projectSandbox, buildNo);
 
 		resp.json(log);
 	});
@@ -139,7 +154,7 @@ app.post("/hook/build/:projectName",
 // Server STARTUP code
 
 console.log("Starting Scriptabuild");
-ensureFolderSync(config.logs);
-app.listen(3000, function () {
+ensureFolderSync(path.join(config.workingDirectory, "logs"));
+app.listen(config.http.port, function () {
 	console.log('Scriptabuild http server listening on port 3000!');
 });

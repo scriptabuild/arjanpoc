@@ -1,11 +1,10 @@
 const path = require("path");
 const fs = require("fs");
 
-function getLogSync(config, project, buildNo = 0) {
+function getLogSync(projectSandbox, buildNo = 0) {
 	if (buildNo === 0) return [];
-	var sandbox = config.workspaces + "/" + escape(project.name);
 
-	let filename = path.join(sandbox, buildNo.toString(), "log.txt");
+	let filename = path.join(projectSandbox, buildNo.toString(), "log.txt");
 
 	let log = fs.readFileSync(filename).toString().split("\n")
 		.filter(line => line)
@@ -17,4 +16,4 @@ function getLogSync(config, project, buildNo = 0) {
 
 module.exports = {
 	getLogSync
-}
+};

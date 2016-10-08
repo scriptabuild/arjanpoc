@@ -1,5 +1,5 @@
+const {setStatusSync} = require("../dataUtils/status");
 const fs = require("fs");
-const Q = require("q");
 const winston = require("winston");
 
 function asStatus(status) {
@@ -11,10 +11,7 @@ function asStatus(status) {
 
         logger.info(hkey.key, `┏━━━━ Marking ${ctx.project.name} as ${status}`);
 
-        let filename = transFn(`%output%/buildstatus.txt`);
-        let fd = fs.openSync(filename, "w");
-        fs.writeSync(fd, status);
-        fs.close(fd);
+        setStatusSync(ctx.paths.sandbox, ctx.paths.buildNo, status);
 
         logger.info(hkey.key, `┗━━━━ Marked ${ctx.project.name} as ${status}`);
         return ctx
