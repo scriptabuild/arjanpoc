@@ -12,10 +12,13 @@ module.exports = function (fn, name = "") {
 				return ctx;
 			})
 			.then(fn)
-			.then(ctx => {
+			.then(() => {
 				logger.info(hkey.key, `┗━━━━ ${name}`);
-				return ctx || ctx;
+				return ctx;
 			})
-			.catch(() => logger.error(hkey.key, `┗━━━━ ${name}`));
+			.catch(err => {
+				logger.error(hkey.key, `┗━━━━ Failed: ${name}`);
+				throw err;
+			})
 	}
 }

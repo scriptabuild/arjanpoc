@@ -1,8 +1,9 @@
 const express = require("express");
 const cors = require("cors");
-// const bodyparser = require("body-parser");
+const bodyparser = require("body-parser");
 const _ = require("lodash");
 const Q = require("q");
+const path = require("path");
 
 const ensureFolder = require("./blocks/ensureFolder");
 const copyFolder = require("./blocks/copyFolder");
@@ -20,9 +21,6 @@ const createBuildContext = require("./buildContextUtils/createBuildContext");
 const getStatusSync = require("./getStatusSync");
 const getLogSync = require("./getLogSync");
 
-
-
-
 const config = require("./config");
 const projects = require("./projects");
 
@@ -31,7 +29,7 @@ const projects = require("./projects");
 // setup EXPRESS application
 
 var app = express();
-app.use("/app", express.static(__dirname + "/wwwroot", {
+app.use("/app", express.static(path.join(__dirname, "wwwroot"), {
 	extensions: ["js", "css", "jpg", "png"]
 }));
 app.use(cors());
@@ -53,7 +51,6 @@ app.get("/api/project-list",
 			.map(p => {
 				let buildNo = getLatestBuildNoSync(config, p);
 				let status = getStatusSync(config, p, buildNo);
-				console.log(buildNo, status);
 				return {
 					name: p.name,
 					status: status.status,
@@ -113,6 +110,11 @@ app.post("/api/project-build/:projectName",
 
 		Q(ctx)
 			.then(mark.asStarted())
+			// .then(block(function(ctx){
+			// 	let logger = ctx.logger;
+			// 	logger.info("**************** DO IT!!! ****************");
+			// 	logger.info("**************** DID IT!! ****************");
+			// }, "this is the test!!!"))
 			.then(git.load(project))
 			.then(executeTask(project.run))
 			// .then(log("Copying output files"))
@@ -132,12 +134,11 @@ app.post("/api/project-build/:projectName",
 		resp.send("oki!!!");
 	});
 
-
-// *** TODO: Move some of the following to buildContextUtils and other folders!!! ***
-
-
-
-
+app.post("/hook/build/:projectName",
+	bodyparser,
+	function (req, resp) {
+		// TODO: log incoming hook-request, get correct commit and branch, start build process
+	});
 
 
 
