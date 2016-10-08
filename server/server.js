@@ -110,11 +110,6 @@ app.post("/api/project-build/:projectName",
 
 		Q(ctx)
 			.then(mark.asStarted())
-			// .then(block(function(ctx){
-			// 	let logger = ctx.logger;
-			// 	logger.info("**************** DO IT!!! ****************");
-			// 	logger.info("**************** DID IT!! ****************");
-			// }, "this is the test!!!"))
 			.then(git.load(project))
 			.then(executeTask(project.run))
 			// .then(log("Copying output files"))

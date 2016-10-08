@@ -1,4 +1,5 @@
-
+const path = require("path");
+const fs = require("fs");
 
 module.exports = function getLogSync(config, project, buildNo = 0) {
 	if (buildNo === 0) return [];
