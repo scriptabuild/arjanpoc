@@ -15,18 +15,11 @@ const mark = require("./blocks/mark");
 
 const ensureFolderSync = require("./buildContextUtils/ensureFolderSync");
 const createBuildContext = require("./buildContextUtils/createBuildContext");
-const {
-	getProjectSandbox
-} = require("./dataUtils/projectSandbox")
-const {
-	getLatestBuildNoSync
-} = require("./dataUtils/buildNo");
-const {
-	getStatusSync
-} = require("./dataUtils/status");
-const {
-	getLogSync
-} = require("./dataUtils/log");
+const {	getProjectSandbox } = require("./dataUtils/projectSandbox")
+const {	getLatestBuildNoSync } = require("./dataUtils/buildNo");
+const {	getBuildSettingsSync } = require("./dataUtils/buildSettings");
+const {	getStatusSync } = require("./dataUtils/status");
+const { getLogSync } = require("./dataUtils/log");
 
 const config = require("./config");
 const projects = require("./projects");
@@ -74,20 +67,26 @@ app.get("/api/project-list",
 
 app.get("/api/project-detail/:projectName",
 	function (req, resp) {
-		let name = req.params.projectName;
+		const name = req.params.projectName;
 		const projects = require("./projects");
-		let project = _(projects).find({
+		const project = _(projects).find({
 			name: name
 		});
 
-		var projectSandbox = getProjectSandbox(config, project);
-		let buildNo = getLatestBuildNoSync(projectSandbox);
-		let status = getStatusSync(projectSandbox, buildNo);
+		const projectSandbox = getProjectSandbox(config, project);
+		const buildNo = getLatestBuildNoSync(projectSandbox);
+		try{
+			var buildSettings = getBuildSettingsSync(projectSandbox, buildNo);
+		}
+		catch(err){
+			buildSettings = { branch: "n/a", commitHash: "n/a"};
+		}
+		const status = getStatusSync(projectSandbox, buildNo);
 
-		let projectDetail = {
+		const projectDetail = {
 			name,
-			branch: "master",
-			commitHash: "e04c911",
+			branch: buildSettings.branch,
+			commitHash: buildSettings.commitHash,
 			timestamp: status.timestamp,
 			buildStatus: status.status
 		};
@@ -120,11 +119,14 @@ app.post("/api/project-build/:projectName",
 		// let branchname;
 
 		let project = projects.find(p => p.name == projectName);
+		let branch = undefined;
+		let commitHash = undefined;
 		let ctx = createBuildContext(config, project);
 
 		Q(ctx)
 			.then(mark.asStarted())
-			.then(git.load(project))
+			// .then(block(() => setBuildSettings({branch, commitHash}))
+			.then(git.load(project, branch, commitHash))
 			.then(executeTask(project.run))
 			// .then(log("Copying output files"))
 			// .then(copyFolder("%build%", "%output%/"))
