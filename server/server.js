@@ -94,20 +94,20 @@ app.get("/api/project-detail/:projectName",
 		resp.json(projectDetail);
 	});
 
-app.get("/api/project-log/:projectName",
+app.get("/api/project-log/:projectName/:buildNo?",
 	function (req, resp) {
-		let name = req.params.projectName;
+		const name = req.params.projectName;
 		const projects = require("./projects");
-		let project = _(projects).find({
+		const project = _(projects).find({
 			name: name
 		});
 
-		var projectSandbox = getProjectSandbox(config, project);
-		let buildNo = getLatestBuildNoSync(projectSandbox);
+		const projectSandbox = getProjectSandbox(config, project);
+		const buildNo = req.params.buildNo || getLatestBuildNoSync(projectSandbox);
 
-		let log = getLogSync(projectSandbox, buildNo);
-
-		resp.json(log);
+		const log = getLogSync(projectSandbox, buildNo);
+		
+		resp.json({buildNo, log});
 	});
 
 app.post("/api/project-build/:projectName",
