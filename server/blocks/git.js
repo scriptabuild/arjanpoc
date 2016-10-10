@@ -6,9 +6,9 @@ const ensureFolder = require("./ensureFolder");
 const _if = require("./_if");
 const executeTask = require("./executeTask");
 const { isDirectory } = require("./utils");
-const { setBuildSettingsSync } = require("../dataUtils/buildSettings");
+const { setBuildSettingsSync, setPathspecSync } = require("../dataUtils/buildSettings");
 
-exports.load = function (project, branch, commitHash = "HEAD") {
+exports.load = function (project, pathspec = "HEAD") {
 	return function (ctx) {
 		let hkey = ctx.hkey.spawn();
 		let logger = ctx.logger || winston.loggers.get("system");
@@ -17,6 +17,7 @@ exports.load = function (project, branch, commitHash = "HEAD") {
         logger.info(hkey.key, `┏━━━━ Loading from git "${project.source.url}"`);
 
 		// TODO: specify branch and commitHash when preparing resources from git
+		setPathspecSync(ctx.paths.sandbox, ctx.paths.buildNo, pathspec)
 
 		let childCtx = _.assignIn({}, ctx, { hkey });
 		return Q(childCtx)
@@ -31,14 +32,14 @@ exports.load = function (project, branch, commitHash = "HEAD") {
 				// false
 				executeTask({ cmd: "git", args: ['clone', project.source.url, "%build%"], options: { cwd: "%sandbox%" } })))
 			
-			.then(executeTask({ cmd: "git", args: ['checkout', commitHash], options: { cwd: "%build%" } }))
+			.then(executeTask({ cmd: "git", args: ['checkout', pathspec], options: { cwd: "%build%" } }))
 			.then(function () {
 
 				exec("git rev-parse --short HEAD", { cwd: ctx.paths.build }, function (err, stdout, stderr) {
 					let commitHash = stdout.split('\n').join('');
 					exec("git rev-parse --abbrev-ref HEAD", { cwd: ctx.paths.build }, function (err, stdout, stderr) {
 						let branch = stdout.split('\n').join('');
-						setBuildSettingsSync(ctx.paths.sandbox, ctx.paths.buildNo, {branch, commitHash})
+						setBuildSettingsSync(ctx.paths.sandbox, ctx.paths.buildNo, {commitHash, branch});
 					});
 				})
 				

@@ -2,7 +2,7 @@
 	<span class="prompt">$</span> scriptabuild status --project "{{project.name}}"<br>
 	<br>
 	Latest activity for {{project.branch}} ({{project.commitHash}}) was {{fromNow(project.timestamp)}}<br>
-	Status: <span class="status {{project.buildStatusCss}}">{{project.buildStatus}}</span><br>
+	Build no. {{project.buildNo}} status: <span class="status {{project.buildStatusCss}}">{{project.buildStatus}}</span><br>
 	<br>
 	<button class="link" v-on:click="click">[Build now]</button><br>
 	<a v-link="{name: 'build-logs', params: {projectName: project.name, buildId: ''}}">[View Log]</a><br>
@@ -30,6 +30,7 @@
 						failed: "failed"
 					};
 					Vue.set(this.project, "buildStatusCss", styles[this.project.buildStatus]);
+					Vue.set(this.project, "buildNo", this.project.buildNo);
 				});;
 		},
 		methods: {

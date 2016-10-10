@@ -75,18 +75,14 @@ app.get("/api/project-detail/:projectName",
 
 		const projectSandbox = getProjectSandbox(config, project);
 		const buildNo = getLatestBuildNoSync(projectSandbox);
-		try{
-			var buildSettings = getBuildSettingsSync(projectSandbox, buildNo);
-		}
-		catch(err){
-			buildSettings = { branch: "n/a", commitHash: "n/a"};
-		}
+		const buildSettings = getBuildSettingsSync(projectSandbox, buildNo);
 		const status = getStatusSync(projectSandbox, buildNo);
 
 		const projectDetail = {
 			name,
 			branch: buildSettings.branch,
 			commitHash: buildSettings.commitHash,
+			buildNo,
 			timestamp: status.timestamp,
 			buildStatus: status.status
 		};
@@ -115,18 +111,14 @@ app.post("/api/project-build/:projectName",
 		let projectName = req.params.projectName;
 
 		// TODO: Trigger the build. Similar to a webhook
-		// let commitId;
-		// let branchname;
+		let pathspec = "HEAD";
 
 		let project = projects.find(p => p.name == projectName);
-		let branch = undefined;
-		let commitHash = undefined;
 		let ctx = createBuildContext(config, project);
 
 		Q(ctx)
 			.then(mark.asStarted())
-			// .then(block(() => setBuildSettings({branch, commitHash}))
-			.then(git.load(project, branch, commitHash))
+			.then(git.load(project, pathspec))
 			.then(executeTask(project.run))
 			// .then(log("Copying output files"))
 			// .then(copyFolder("%build%", "%output%/"))
