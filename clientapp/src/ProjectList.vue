@@ -16,6 +16,8 @@
 	import Vue from "vue";
 	import _ from "lodash";
 	import moment from "moment";
+	import pubsub from "./pubsub";
+
 	export default {
 		name: "project-list",
 		data() {
