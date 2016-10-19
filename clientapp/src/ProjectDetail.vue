@@ -1,8 +1,7 @@
 <template>
 	<span class="prompt">$</span> scriptabuild status --project "{{project.name}}"<br>
-	<br>
-	Latest activity for {{project.branch}} ({{project.commitHash}}) was {{fromNow(project.timestamp)}}<br>
-	Build no. {{project.buildNo}} status: <span class="status {{project.buildStatusCss}}">{{project.buildStatus}}</span><br>
+	<br> Latest activity for {{project.branch}} ({{project.commitHash}}) was {{fromNow(project.timestamp)}}<br> Build no. {{project.buildNo}}
+	status: <span class="status {{project.buildStatusCss}}">{{project.buildStatus}}</span><br>
 	<br>
 	<button class="link" v-on:click="click">[Build now]</button><br>
 	<a v-link="{name: 'build-logs', params: {projectName: project.name, buildId: ''}}">[View Log]</a><br>
@@ -10,7 +9,18 @@
 
 <script>
 	import Vue from "vue";
+	import pubsub from "./pubsub";
 	import moment from "moment";
+
+	let styles = {
+		"never built": "unknown",
+		ok: "ok",
+		running: "running",
+		unknown: "unknown",
+		failed: "failed"
+	};
+
+
 	export default {
 		name: "project-detail",
 		data: () => ({
@@ -22,16 +32,15 @@
 				.then(resp => resp.json())
 				.then(project => {
 					this.project = project
-					let styles = {
-						"never built": "unknown",
-						ok: "ok",
-						running: "running",
-						unknown: "unknown",
-						failed: "failed"
-					};
 					Vue.set(this.project, "buildStatusCss", styles[this.project.buildStatus]);
 					Vue.set(this.project, "buildNo", this.project.buildNo);
-				});;
+				});
+			pubsub.on("buildStatusChanged", data => {
+				if(data.buildInfo.projectName == this.$route.params.projectName){
+					Vue.set(this.project, "buildStatus", data.buildStatus);					
+					Vue.set(this.project, "buildStatusCss", styles[data.buildStatus]);					
+				}
+			});
 		},
 		methods: {
 			fromNow: timestamp => timestamp && moment(timestamp).fromNow(),

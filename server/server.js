@@ -1,9 +1,14 @@
 const express = require("express");
+const server = require('http').createServer();
+const url = require('url');
+const WebSocketServer = require('ws').Server;
+
 const cors = require("cors");
 const bodyparser = require("body-parser");
 const _ = require("lodash");
 const Q = require("q");
 const path = require("path");
+
 
 const ensureFolder = require("./blocks/ensureFolder");
 const copyFolder = require("./blocks/copyFolder");
@@ -15,20 +20,56 @@ const mark = require("./blocks/mark");
 
 const ensureFolderSync = require("./buildContextUtils/ensureFolderSync");
 const createBuildContext = require("./buildContextUtils/createBuildContext");
-const {	getProjectSandbox } = require("./dataUtils/projectSandbox")
-const {	getLatestBuildNoSync } = require("./dataUtils/buildNo");
-const {	getBuildSettingsSync } = require("./dataUtils/buildSettings");
-const {	getStatusSync } = require("./dataUtils/status");
-const { getLogSync } = require("./dataUtils/log");
+const {
+	getProjectSandbox
+} = require("./dataUtils/projectSandbox")
+const {
+	getLatestBuildNoSync
+} = require("./dataUtils/buildNo");
+const {
+	getBuildSettingsSync
+} = require("./dataUtils/buildSettings");
+const {
+	getStatusSync
+} = require("./dataUtils/status");
+const {
+	getLogSync
+} = require("./dataUtils/log");
 
 const config = require("./config");
 const projects = require("./projects");
 
 
+// setup WS application
+const wss = new WebSocketServer({server});
+
+wss.on('connection', function connection(ws) {
+	var location = url.parse(ws.upgradeReq.url, true);
+	// you might use location.query.access_token to authenticate or share sessions
+	// or ws.upgradeReq.headers.cookie (see http://stackoverflow.com/a/16395220/151312)
+
+	ws.on('message', function incoming(message) {
+		console.log('received: %s', message);
+	});
+
+	// ws.send('something');
+	// ws.send('is');
+	// ws.send('happening');
+	// ws.send('on');
+	// ws.send('the');
+	// ws.send('server');
+});
+
+wss.broadcast = function broadcast(data) {
+  wss.clients.forEach(function each(client) {
+    client.send(JSON.stringify(data));
+  });
+};
+
 
 // setup EXPRESS application
+const app = express();
 
-var app = express();
 app.use("/app", express.static(path.join(__dirname, "wwwroot"), {
 	extensions: ["js", "css", "jpg", "png"]
 }));
@@ -69,9 +110,7 @@ app.get("/api/project-detail/:projectName",
 	function (req, resp) {
 		const name = req.params.projectName;
 		const projects = require("./projects");
-		const project = _(projects).find({
-			name: name
-		});
+		const project = _(projects).find({ name });
 
 		const projectSandbox = getProjectSandbox(config, project);
 		const buildNo = getLatestBuildNoSync(projectSandbox);
@@ -94,16 +133,14 @@ app.get("/api/project-log/:projectName/:buildNo?",
 	function (req, resp) {
 		const name = req.params.projectName;
 		const projects = require("./projects");
-		const project = _(projects).find({
-			name: name
-		});
+		const project = _(projects).find({ name });
 
 		const projectSandbox = getProjectSandbox(config, project);
 		const buildNo = req.params.buildNo || getLatestBuildNoSync(projectSandbox);
 
 		const log = getLogSync(projectSandbox, buildNo);
-		
-		resp.json({buildNo, log});
+
+		resp.json({ buildNo, log });
 	});
 
 app.post("/api/project-build/:projectName",
@@ -116,6 +153,10 @@ app.post("/api/project-build/:projectName",
 		let project = projects.find(p => p.name == projectName);
 		let ctx = createBuildContext(config, project);
 
+		let buildInfo = {pathspec, projectName, buildNo: ctx.paths.buildNo};
+
+		wss.broadcast({messageType: "buildStatusChanged", messagePayload:{buildInfo, buildStatus: "running"}});
+
 		Q(ctx)
 			.then(mark.asStarted())
 			.then(git.load(project, pathspec))
@@ -126,12 +167,17 @@ app.post("/api/project-build/:projectName",
 			.then(mark.asCompleted())
 			// .then(git.tag( ... ))
 			// .then(git.push( ... ))
+			.then(block(ctx => {
+				wss.broadcast({messageType: "buildStatusChanged", messagePayload:{buildInfo, buildStatus: "ok"}});
+			}))
 			.catch(err => {
 				ctx.logger.error(err);
 				console.error("Scripts failed", err);
 				mark.asFailed()(ctx);
-				ctx.logger
+
+				wss.broadcast({messageType: "buildStatusChanged", messagePayload:{buildInfo, buildStatus: "failed"}});
 			});
+
 
 		console.log("*** Starting the build for " + req.params.projectName);
 		resp.send("oki!!!");
@@ -149,6 +195,8 @@ app.post("/hook/build/:projectName",
 
 console.log("Starting Scriptabuild");
 ensureFolderSync(path.join(config.workingDirectory, "logs"));
-app.listen(config.http.port, function () {
-	console.log('Scriptabuild http server listening on port 3000!');
+
+server.on('request', app);
+server.listen(config.http.port, function () {
+ 	console.log('Scriptabuild http server listening on port ' + server.address().port);
 });

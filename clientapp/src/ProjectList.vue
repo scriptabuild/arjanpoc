@@ -39,6 +39,12 @@
 						Vue.set(this.projects[k], "buildStatusCss", styles[this.projects[k].status]);
 					}
 				});
+			pubsub.on("buildStatusChanged", data => {
+				// if(data.buildInfo.projectName == this.$route.params.projectName){
+				// 	Vue.set(this.project, "buildStatus", data.buildStatus);					
+				// 	Vue.set(this.project, "buildStatusCss", styles[data.buildStatus]);					
+				// }
+			});
 		},
 		methods: {
 			fromNow: timestamp => timestamp && moment(timestamp).fromNow()

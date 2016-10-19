@@ -4,6 +4,7 @@ import ProjectList from "./ProjectList.vue"
 import ProjectDetail from "./ProjectDetail.vue"
 import BuildDetail from "./BuildDetail.vue"
 import BuildOutput from "./BuildOutput.vue"
+import pubsub from "./pubsub"
 
 Vue.use(VueRouter);
 
@@ -34,3 +35,14 @@ router
   })
   .redirect({ "*": "/projects" })
   .start({}, "body");
+
+
+var exampleSocket = new WebSocket("ws://localhost:3000", "protocolOne");
+exampleSocket.onopen = function (event) {
+  // exampleSocket.send("Here's some text that the server is urgently awaiting!"); 
+};
+
+exampleSocket.onmessage = function (event) {
+  let data = JSON.parse(event.data);
+  pubsub.emit(data.messageType, data.messagePayload);
+}
