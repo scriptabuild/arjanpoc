@@ -20,21 +20,11 @@ const mark = require("./blocks/mark");
 
 const ensureFolderSync = require("./buildContextUtils/ensureFolderSync");
 const createBuildContext = require("./buildContextUtils/createBuildContext");
-const {
-	getProjectSandbox
-} = require("./dataUtils/projectSandbox")
-const {
-	getLatestBuildNoSync
-} = require("./dataUtils/buildNo");
-const {
-	getBuildSettingsSync
-} = require("./dataUtils/buildSettings");
-const {
-	getStatusSync
-} = require("./dataUtils/status");
-const {
-	getLogSync
-} = require("./dataUtils/log");
+const {	getProjectSandbox } = require("./dataUtils/projectSandbox")
+const {	getLatestBuildNoSync } = require("./dataUtils/buildNo");
+const {	getBuildSettingsSync } = require("./dataUtils/buildSettings");
+const {	getStatusSync } = require("./dataUtils/status");
+const {	getLogSync } = require("./dataUtils/log");
 
 const config = require("./config");
 const projects = require("./projects");
@@ -52,12 +42,6 @@ wss.on('connection', function connection(ws) {
 		console.log('received: %s', message);
 	});
 
-	// ws.send('something');
-	// ws.send('is');
-	// ws.send('happening');
-	// ws.send('on');
-	// ws.send('the');
-	// ws.send('server');
 });
 
 wss.broadcast = function broadcast(data) {
@@ -97,7 +81,7 @@ app.get("/api/project-list",
 				let status = getStatusSync(projectSandbox, buildNo);
 				return {
 					name: p.name,
-					status: status.status,
+					buildStatus: status.status,
 					timestamp: status.timestamp
 				};
 			})

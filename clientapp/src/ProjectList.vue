@@ -5,7 +5,7 @@
 		<li v-for="project in projects">
 			<a v-link="{name: 'project-detail', params: { projectName: project.name}}">
 				{{project.name}}
-				<span class="status {{project.buildStatusCss}}">{{project.status}}</span>
+				<span class="status {{project.buildStatusCss}}">{{project.buildStatus}}</span>
 				{{fromNow(project.timestamp)}}
 			</a>
 		</li>
@@ -39,14 +39,14 @@
 				.then(projects => this.projects = projects)
 				.then(() => {
 					for (var k in this.projects) {
-						Vue.set(this.projects[k], "buildStatusCss", styles[this.projects[k].status]);
+						Vue.set(this.projects[k], "buildStatusCss", styles[this.projects[k].buildStatus]);
 					}
 				});
 			pubsub.on("buildStatusChanged", data => {
 				let project = _.find(this.projects, {name: data.buildInfo.projectName});
 
 				Vue.set(project, "buildNo", data.buildInfo.buildNo);					
-				Vue.set(project, "status", data.buildStatus);					
+				Vue.set(project, "buildStatus", data.buildStatus);					
 				Vue.set(project, "buildStatusCss", styles[data.buildStatus]);					
 				Vue.set(project, "timestamp", moment());	
 			});
