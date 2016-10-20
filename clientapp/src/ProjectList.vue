@@ -18,6 +18,14 @@
 	import moment from "moment";
 	import pubsub from "./pubsub";
 
+	let styles = {
+		"never built": "unknown",
+		ok: "ok",
+		running: "running",
+		unknown: "unknown",
+		failed: "failed"
+	};
+
 	export default {
 		name: "project-list",
 		data() {
@@ -30,22 +38,17 @@
 				.then(resp => resp.json())
 				.then(projects => this.projects = projects)
 				.then(() => {
-					let styles = {
-						"never built": "unknown",
-						ok: "ok",
-						running: "running",
-						unknown: "unknown",
-						failed: "failed"
-					};
 					for (var k in this.projects) {
 						Vue.set(this.projects[k], "buildStatusCss", styles[this.projects[k].status]);
 					}
 				});
 			pubsub.on("buildStatusChanged", data => {
-				// if(data.buildInfo.projectName == this.$route.params.projectName){
-				// 	Vue.set(this.project, "buildStatus", data.buildStatus);					
-				// 	Vue.set(this.project, "buildStatusCss", styles[data.buildStatus]);					
-				// }
+				let project = _.find(this.projects, {name: data.buildInfo.projectName});
+
+				Vue.set(project, "buildNo", data.buildInfo.buildNo);					
+				Vue.set(project, "status", data.buildStatus);					
+				Vue.set(project, "buildStatusCss", styles[data.buildStatus]);					
+				Vue.set(project, "timestamp", moment());	
 			});
 		},
 		methods: {

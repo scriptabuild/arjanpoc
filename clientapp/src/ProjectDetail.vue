@@ -40,6 +40,7 @@
 					Vue.set(this.project, "buildNo", data.buildInfo.buildNo);					
 					Vue.set(this.project, "buildStatus", data.buildStatus);					
 					Vue.set(this.project, "buildStatusCss", styles[data.buildStatus]);					
+					Vue.set(this.project, "timestamp", moment());					
 				}
 			});
 		},
