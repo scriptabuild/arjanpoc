@@ -3,8 +3,11 @@
   "version": "0.1.1",
   "description": "The scripted CI system",
   "main": "server.js",
+  "bin":{
+    "server": "./scriptabuild/server"
+  },
   "scripts": {
-    "server": "node server/server.js"
+    "server": "node server.js"
   },
   "repository": {
     "type": "git",
