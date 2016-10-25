@@ -9,9 +9,9 @@ import pubsub from "./pubsub"
 Vue.use(VueRouter);
 
 var router = new VueRouter({
-  // hashbang: false,
-  // history: true,
-  // root: "/app"
+  hashbang: false,
+  history: true,
+  root: "/app"
 });
 
 router
@@ -38,9 +38,9 @@ router
 
 
 var exampleSocket = new WebSocket("ws://localhost:3000", "protocolOne");
-exampleSocket.onopen = function (event) {
-  // exampleSocket.send("Here's some text that the server is urgently awaiting!"); 
-};
+// exampleSocket.onopen = function (event) {
+//   // exampleSocket.send("Here's some text that the server is urgently awaiting!"); 
+// };
 
 exampleSocket.onmessage = function (event) {
   let data = JSON.parse(event.data);

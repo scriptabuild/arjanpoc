@@ -12,7 +12,7 @@ Open `config.json` to configure working directory and http port for server
 
 
 ``` bash
-??? TODO: cli to run the server ???
+npm run server http.port:8080 workingDirectory:/Users/arjan/Documents/temp/scriptabuild
 ```
 
 ??? TODO: how to add and configure a project ???

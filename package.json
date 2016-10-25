@@ -4,8 +4,7 @@
   "description": "The scripted CI system",
   "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "ci-task": "echo \"This is just a demo task\""
+    "server": "node server/server.js"
   },
   "repository": {
     "type": "git",

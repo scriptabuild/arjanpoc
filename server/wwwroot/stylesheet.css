@@ -20,15 +20,37 @@ body{
 .prompt{
 	color: #aaa;
 }
-.unknown{
+
+
+.status.unknown,
+.status.never.built{
 	color: #666;
 }
-.ok{
+.status.running {
+	color: #ffff00;
+}
+.status.ok{
 	color: #00ff00;
 }
-.failed{
+.status.failed{
 	color: #ff0000;
 }
+
+
+ul.log{
+    margin-top: 0;
+    margin-bottom: 0;
+    padding-left: 0;
+    list-style: none;
+}
+.log .info{
+	color: #ffffff;
+}
+.log .error{
+	color: #ff0000;
+}
+
+
 .cursor{
 	background-color: #666;
 }
