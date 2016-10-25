@@ -1,4 +1,4 @@
-const {setStatusSync} = require("../dataUtils/status");
+const { setStatusSync } = require("../dataUtils/status");
 const fs = require("fs");
 const winston = require("winston");
 

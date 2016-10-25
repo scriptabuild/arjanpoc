@@ -10,6 +10,8 @@ const Q = require("q");
 const path = require("path");
 const moment = require("moment");
 
+const fs = require("fs");
+
 const ensureFolder = require("./blocks/ensureFolder");
 const copyFolder = require("./blocks/copyFolder");
 const executeTask = require("./blocks/executeTask");
@@ -163,11 +165,30 @@ app.post("/api/project-build/:projectName",
 		resp.send("oki!!!");
 	});
 
-app.post("/hook/build/:projectName",
-	bodyparser,
+app.all("/hook/build/:projectName",
+	bodyparser.json(),
 	function (req, resp) {
-		// TODO: log incoming hook-request, get correct commit and branch, start build process
+		let projectName = req.params.projectName;
+		
+		// TODO: Get correct commit and branch, start build process
+
+		// TODO: Remove the logging when it is no longer neccessary
+		console.log(req.method, req.path, req.params);
 		console.log(req.body);
+
+		let project = projects.find(p => p.name == projectName);
+		let ctx = createBuildContext(config, project);
+		let filename = path.join(ctx.paths.sandbox, ctx.paths.buildNo.toString(), "hook-data.json");
+		let fd = fs.openSync(filename, "w");
+		fs.writeSync(fd, JSON.stringify({
+			method: req.method,
+			path: req.path,
+			params: req.params,
+			body: req.body
+		}));
+		fs.close(fd);
+
+		resp.send("oki!!!");
 	});
 
 
