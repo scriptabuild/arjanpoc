@@ -32,6 +32,8 @@ const config = {
 	projectsConfigurationFile: (process.argv.find(a => a.indexOf("projectsConfigurationFile:")>=0) || "projectsConfigurationFile:./projects").substr(26)
 };
 
+console.log("config", config);
+
 const projects = require(config.projectsConfigurationFile);
 
 
