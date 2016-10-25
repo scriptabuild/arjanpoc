@@ -58,6 +58,7 @@ wss.broadcast = function broadcast(data) {
 
 // setup EXPRESS application
 const app = express();
+console.log("*** __dirname", __dirname);
 
 app.use("/app", express.static(path.join(__dirname, "wwwroot"), {
 	extensions: ["js", "css", "jpg", "png"]
