@@ -60,9 +60,7 @@ wss.broadcast = function broadcast(data) {
 const app = express();
 console.log("*** __dirname", __dirname);
 
-app.use("/app", express.static(path.join(__dirname, "wwwroot"), {
-	extensions: ["js", "css", "jpg", "png"]
-}));
+app.use("/app/", express.static(path.join(__dirname, "wwwroot")));
 
 app.use(cors());
 // app.use(cors({ allowedOrigins: "*" }));
@@ -71,7 +69,7 @@ app.get("/", function (req, resp) {
 	resp.redirect("/app/projects");
 })
 
-app.get("/app*", function (req, resp) {
+app.get("/app/*", function (req, resp) {
 	resp.sendFile(__dirname + "/wwwroot/index.html");
 });
 
