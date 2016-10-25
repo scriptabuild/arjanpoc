@@ -20,20 +20,14 @@ const mark = require("./blocks/mark");
 
 const ensureFolderSync = require("./buildContextUtils/ensureFolderSync");
 const createBuildContext = require("./buildContextUtils/createBuildContext");
+const getConfig = require("./buildContextUtils/getConfig");
 const {	getProjectSandbox } = require("./dataUtils/projectSandbox")
 const {	getLatestBuildNoSync } = require("./dataUtils/buildNo");
 const {	getBuildSettingsSync } = require("./dataUtils/buildSettings");
 const {	getStatusSync } = require("./dataUtils/status");
 const {	getLogSync } = require("./dataUtils/log");
 
-const config = {
-	http: {port: (process.argv.find(a => a.indexOf("http.port:")>=0) || "http.port:80").substr(10)},
-	workingDirectory: (process.argv.find(a => a.indexOf("workingDirectory:")>=0) || "workingDirectory:./scriptabuild/workingdirectory").substr(17),
-	projectsConfigurationFile: (process.argv.find(a => a.indexOf("projectsConfigurationFile:")>=0) || "projectsConfigurationFile:./projects").substr(26)
-};
-
-console.log("config", config);
-
+const config = getConfig();
 const projects = require(config.projectsConfigurationFile);
 
 
