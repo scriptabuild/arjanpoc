@@ -4,10 +4,11 @@
   "description": "The scripted CI system",
   "main": "server.js",
   "bin": {
-    "server": "./scriptabuild"
+    "server": "./server"
   },
   "scripts": {
-    "server": "node server/server.js"
+    "server": "node server.js",
+    "ci-task": "echo 'This is an noop example ci-task'"
   },
   "repository": {
     "type": "git",
