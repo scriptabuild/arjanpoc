@@ -4,10 +4,10 @@
   "description": "The scripted CI system",
   "main": "server.js",
   "bin": {
-    "server": "./scriptabuild/server"
+    "server": "./scriptabuild"
   },
   "scripts": {
-    "server": "node server.js"
+    "server": "node server/server.js"
   },
   "repository": {
     "type": "git",
