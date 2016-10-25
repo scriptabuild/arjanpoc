@@ -28,10 +28,11 @@ const {	getLogSync } = require("./dataUtils/log");
 
 const config = {
 	http: {port: (process.argv.find(a => a.indexOf("http.port:")>=0) || "http.port:80").substr(10)},
-	workingDirectory: (process.argv.find(a => a.indexOf("workingDirectory:")>=0) || "workingDirectory:./arjans_work_dir").substr(17)
+	workingDirectory: (process.argv.find(a => a.indexOf("workingDirectory:")>=0) || "workingDirectory:./scriptabuild/workingdirectory").substr(17),
+	projectsConfigurationFile: (process.argv.find(a => a.indexOf("projectsConfigurationFile:")>=0) || "projectsConfigurationFile:./projects").substr(26)
 };
 
-const projects = require("./projects");
+const projects = require(config.projectsConfigurationFile);
 
 
 // setup WS application
@@ -75,8 +76,6 @@ app.get("/app*", function (req, resp) {
 
 app.get("/api/project-list",
 	function (req, resp) {
-		const projects = require("./projects");
-
 		results = _(projects)
 			.map(p => {
 				var projectSandbox = getProjectSandbox(config, p);
@@ -97,7 +96,6 @@ app.get("/api/project-list",
 app.get("/api/project-detail/:projectName",
 	function (req, resp) {
 		const name = req.params.projectName;
-		const projects = require("./projects");
 		const project = _(projects).find({ name });
 
 		const projectSandbox = getProjectSandbox(config, project);
@@ -120,7 +118,6 @@ app.get("/api/project-detail/:projectName",
 app.get("/api/project-log/:projectName/:buildNo?",
 	function (req, resp) {
 		const name = req.params.projectName;
-		const projects = require("./projects");
 		const project = _(projects).find({ name });
 
 		const projectSandbox = getProjectSandbox(config, project);
