@@ -37,7 +37,7 @@ router
   .start({}, "body");
 
 
-var exampleSocket = new WebSocket("ws://localhost:3000", "protocolOne");
+var exampleSocket = new WebSocket("ws://" + location.host, "protocolOne");
 // exampleSocket.onopen = function (event) {
 //   // exampleSocket.send("Here's some text that the server is urgently awaiting!"); 
 // };
