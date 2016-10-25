@@ -1,9 +1,9 @@
 {
   "name": "scriptabuild",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "The scripted CI system",
   "main": "server.js",
-  "bin":{
+  "bin": {
     "server": "./scriptabuild/server"
   },
   "scripts": {
