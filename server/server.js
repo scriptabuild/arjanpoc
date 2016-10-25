@@ -53,14 +53,15 @@ wss.on('connection', function connection(ws) {
 
 wss.broadcast = function broadcast(data) {
   wss.clients.forEach(function each(client) {
+	console.log("WS send", JSON.stringify(data));
     client.send(JSON.stringify(data));
+	console.log("WS sent");
   });
 };
 
 
 // setup EXPRESS application
 const app = express();
-console.log("*** __dirname", __dirname);
 
 app.use("/app/", express.static(path.join(__dirname, "wwwroot")));
 
@@ -173,6 +174,7 @@ app.post("/hook/build/:projectName",
 	bodyparser,
 	function (req, resp) {
 		// TODO: log incoming hook-request, get correct commit and branch, start build process
+		console.log(req.body);
 	});
 
 
