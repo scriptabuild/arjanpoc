@@ -55,7 +55,6 @@ wss.broadcast = function broadcast(data) {
   wss.clients.forEach(function each(client) {
 	console.log("WS send", JSON.stringify(data));
     client.send(JSON.stringify(data));
-	console.log("WS sent");
   });
 };
 

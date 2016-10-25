@@ -37,7 +37,7 @@ function getLogger(filename) {
 	return new(winston.Logger)({
 		level: "info",
 		transports: [
-			new(winston.transports.Console)(),
+			// new(winston.transports.Console)(),
 			new(winston.transports.File)({
 				filename
 			})
