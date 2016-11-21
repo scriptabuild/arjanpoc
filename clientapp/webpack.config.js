@@ -2,7 +2,7 @@ var path = require('path')
 var webpack = require('webpack')
 
 module.exports = {
-  entry: ['whatwg-fetch', './src/main.js'],
+  entry: ['whatwg-fetch', 'promise-polyfill', './src/main.js'],
   output: {
     path: path.resolve(__dirname, '../server/wwwroot/dist'),
     publicPath: '/dist/',
