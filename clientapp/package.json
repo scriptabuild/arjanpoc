@@ -12,6 +12,7 @@
     "css-loader": "^0.23.1",
     "lodash": "^4.15.0",
     "moment": "^2.15.0",
+    "promise-polyfill": "^6.0.2",
     "vue": "^1.0.0",
     "vue-router": "^0.7.13",
     "webpack-dev-server": "^1.15.2",
