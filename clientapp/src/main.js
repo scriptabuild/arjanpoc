@@ -1,12 +1,12 @@
-require("promise-polyfill");
+require('es6-promise').polyfill();
 
-import Vue from "vue"
-import VueRouter from "vue-router"
-import ProjectList from "./ProjectList.vue"
-import ProjectDetail from "./ProjectDetail.vue"
-import BuildDetail from "./BuildDetail.vue"
-import BuildOutput from "./BuildOutput.vue"
-import pubsub from "./pubsub"
+import Vue from "vue";
+import VueRouter from "vue-router";
+import ProjectList from "./ProjectList.vue";
+import ProjectDetail from "./ProjectDetail.vue";
+import BuildDetail from "./BuildDetail.vue";
+import BuildOutput from "./BuildOutput.vue";
+import pubsub from "./pubsub";
 
 Vue.use(VueRouter);
 
