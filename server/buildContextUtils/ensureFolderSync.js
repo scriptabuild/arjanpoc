@@ -19,7 +19,7 @@ module.exports = function ensureFolderSync(path, mask) {
 function createSubpaths(path) {
 	var paths = [];
 	let pos = 0;
-	while ((pos = path.indexOf("/", pos + 1)) > -1) {
+	while ((pos = path.indexOf(path.delimiter, pos + 1)) > -1) {
 		paths.push(path.substr(0, pos));
 	}
 	paths.push(path);

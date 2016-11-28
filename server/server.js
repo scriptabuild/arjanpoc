@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 const express = require("express");
 const server = require('http').createServer();
 const url = require('url');
@@ -160,7 +162,7 @@ app.post("/api/project-build/:projectName",
 				wss.broadcast({messageType: "buildStatusChanged", messagePayload:{buildInfo, buildStatus: "failed"}});
 			});
 
-
+		console.log();
 		console.log("*** Starting the build for " + req.params.projectName);
 		resp.send("oki!!!");
 	});
@@ -202,3 +204,4 @@ server.on('request', app);
 server.listen(config.http.port, function () {
  	console.log('Scriptabuild http server listening on port ' + server.address().port);
 });
+
