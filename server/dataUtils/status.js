@@ -7,29 +7,35 @@ function getStatusSync(projectSandbox, buildNo = 0) {
 		timestamp: null
 	};
 
-	let filename = path.join(projectSandbox, buildNo.toString(), "buildstatus.txt");
-	let stat = fs.statSync(filename);
-	let timestamp = stat.mtime;
-	let fd = fs.openSync(filename, "r");
-	let status = fs.readFileSync(fd);
-	fs.close(fd);
+	try{
 
-	if (status == "completed") return {
-		status: "ok",
-		timestamp
-	};
-	if (status == "started") return {
-		status: "running",
-		timestamp
-	};
-	if (!status) return {
-		status: "unknown",
-		timestamp
-	};
-	return {
-		status: status.toString(),
-		timestamp
-	};
+		let filename = path.join(projectSandbox, buildNo.toString(), "buildstatus.txt");
+		let stat = fs.statSync(filename);
+		let timestamp = stat.mtime;
+		let fd = fs.openSync(filename, "r");
+		let status = fs.readFileSync(fd);
+		fs.close(fd);
+
+		if (status == "completed") return {
+			status: "ok",
+			timestamp
+		};
+		if (status == "started") return {
+			status: "running",
+			timestamp
+		};
+		if (!status) return {
+			status: "unknown",
+			timestamp
+		};
+		return {
+			status: status.toString(),
+			timestamp
+		};
+	}
+	catch(err){
+		return {status: "unknown"};
+	}
 }
 
 function setStatusSync(projectSandbox, buildNo, status) {

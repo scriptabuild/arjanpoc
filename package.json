@@ -4,7 +4,7 @@
   "description": "The scripted CI system",
   "main": "server/server.js",
   "bin": {
-    "server": "./server/server.js"
+    "scriptabuild": "./server/server.js"
   },
   "scripts": {
     "ci-task": "echo 'This is an noop example ci-task'"

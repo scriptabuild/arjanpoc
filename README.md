@@ -5,7 +5,7 @@ The scriptable build system
 ## Configuration and first run
 
 ``` bash
-npm install scriptabuild
+npm install -g scriptabuild
 ```
 
 Open `config.json` to configure working directory and http port for server

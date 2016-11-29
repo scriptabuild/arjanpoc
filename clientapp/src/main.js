@@ -39,11 +39,13 @@ router
   .start({}, "body");
 
 
-var exampleSocket = new WebSocket("ws://" + location.host, "protocolOne");
+var location = window.location;
+var wsProtocol = location.protocol == "http" ? "ws" : "wss";
+var exampleSocket = new WebSocket(`${wsProtocol}://${location.host}` + location.host, "protocolOne");
 // exampleSocket.onopen = function (event) {
 //   // exampleSocket.send("Here's some text that the server is urgently awaiting!"); 
 // };
-
+ 
 exampleSocket.onmessage = function (event) {
   let data = JSON.parse(event.data);
   pubsub.emit(data.messageType, data.messagePayload);
