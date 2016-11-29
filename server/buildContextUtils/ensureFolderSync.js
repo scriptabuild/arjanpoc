@@ -1,19 +1,16 @@
 const fs = require("fs");
+const path = require("path");
 
-module.exports = function ensureFolderSync(path, mask) {
-	let paths = createSubpaths(path);
 
-	console.log("*** delimiter: " + path.delimiter);
-	for(let path in paths){
-		console.log("- " + path);
-	}
+module.exports = function ensureFolderSync(folderPath, mask) {
+	let pathParts = createSubpaths(folderPath);
 	
-	for (let path of paths) {
+	for (let pathPart of pathParts) {
 		try {
 			if (mask == undefined) {
 				mask = 0777;
 			}
-			fs.mkdirSync(path, mask);
+			fs.mkdirSync(pathPart, mask);
 		} catch (err) {
 			if (err.code == "EEXIST") continue;
 			throw err;
@@ -21,12 +18,12 @@ module.exports = function ensureFolderSync(path, mask) {
 	}
 }
 
-function createSubpaths(path) {
-	var paths = [];
+function createSubpaths(folderPath) {
+	var pathParts = [];
 	let pos = 0;
-	while ((pos = path.indexOf(path.delimiter, pos + 1)) > -1) {
-		paths.push(path.substr(0, pos));
+	while ((pos = folderPath.indexOf(path.sep, pos + 1)) > -1) {
+		pathParts.push(folderPath.substr(0, pos));
 	}
-	paths.push(path);
-	return paths;
+	pathParts.push(folderPath);
+	return pathParts;
 }
