@@ -42,6 +42,7 @@ router
 var location = window.location;
 var wsProtocol = location.protocol == "http" ? "ws" : "wss";
 var exampleSocket = new WebSocket(`${wsProtocol}://${location.host}` + location.host, "protocolOne");
+
 // exampleSocket.onopen = function (event) {
 //   // exampleSocket.send("Here's some text that the server is urgently awaiting!"); 
 // };
