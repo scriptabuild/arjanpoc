@@ -12,7 +12,7 @@ Open `config.json` to configure working directory and http port for server
 
 
 ``` bash
-node node_modules/scriptabuild/server/server.js http.port:3001 projectsConfigurationFile:/Users/arjan/Documents/dev/scriptabuild/projects.json workingDirectory:/Users/arjan/Documents/dev/test/t1/ws1
+scriptabuild http.port:3001 projectsConfigurationFile:/Users/arjan/Documents/dev/scriptabuild/projects.json workingDirectory:/Users/arjan/Documents/dev/test/t1/ws1
 ```
 
 ??? TODO: how to add and configure a project ???
