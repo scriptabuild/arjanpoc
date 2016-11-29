@@ -3,6 +3,11 @@ const fs = require("fs");
 module.exports = function ensureFolderSync(path, mask) {
 	let paths = createSubpaths(path);
 
+	console.log("*** delimiter: " + path.delimiter);
+	for(let path in paths){
+		console.log("- " + path);
+	}
+	
 	for (let path of paths) {
 		try {
 			if (mask == undefined) {
