@@ -167,7 +167,7 @@ app.post("/api/project-build/:projectName",
 		resp.send("oki!!!");
 	});
 
-app.all("/hook/build/:projectName",
+app.all("/api/hook/build/:projectName",
 	bodyparser.json(),
 	function (req, resp) {
 		let projectName = req.params.projectName;
