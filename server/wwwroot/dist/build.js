@@ -14754,7 +14754,7 @@
 	
 	var location = window.location;
 	var wsProtocol = location.protocol == "http" ? "ws" : "wss";
-	var exampleSocket = new WebSocket(wsProtocol + "://" + location.host + location.host, "protocolOne");
+	var exampleSocket = new WebSocket(wsProtocol + "://" + location.host, "protocolOne");
 	
 	exampleSocket.onmessage = function (event) {
 	  var data = JSON.parse(event.data);
