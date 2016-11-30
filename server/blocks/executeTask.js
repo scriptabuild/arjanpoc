@@ -39,6 +39,9 @@ function getPreparedExecSpawnFunction(task, transFn) {
     if (!options.cwd) {
         options.cwd = transFn("%build%");
     }
+    if (!options.shell) {
+        options.shell = true;
+    }
     return runSpawn(cmd, args, options);
 }
 
