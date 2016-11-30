@@ -65,18 +65,18 @@ function runSpawn(cmd, args, options) {
         return Q.promise(function (resolve, reject, notify) {
 
             logger.info(hkey.key, `┏━━━━ Starting child process`);
-            logger.info(hkey.key, `┃ "${cmd} ${args.join(" ")}"`);
+            logger.info(hkey.key, `"${cmd} ${args.join(" ")}"`);
             // logger.info({ cmd, args, options });
 
             const proc = spawn(cmd, args, options);
 
             proc.stdout.on('data', data => {
-                data.toString().split("\n").forEach(line => logger.info(hkey.key, `┃ ${line}`));
+                data.toString().split("\n").forEach(line => logger.info(hkey.key, line));
             });
 
             var message = "";
             proc.stderr.on('data', data => {
-                data.toString().split("\n").forEach(line => logger.error(hkey.key, `┃ ${line}`));
+                data.toString().split("\n").forEach(line => logger.error(hkey.key, line));
 
                 message += data + "\n";
             });

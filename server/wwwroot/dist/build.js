@@ -14753,7 +14753,9 @@
 	}).redirect({ "*": "/projects" }).start({}, "body");
 	
 	var location = window.location;
-	var wsProtocol = location.protocol == "http" ? "ws" : "wss";
+	
+	var wsProtocol = location.protocol == "http:" ? "ws" : "wss";
+	
 	var exampleSocket = new WebSocket(wsProtocol + "://" + location.host, "protocolOne");
 	
 	exampleSocket.onmessage = function (event) {

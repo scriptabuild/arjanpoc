@@ -28,10 +28,10 @@ function execCopyFolder(ctx, fromPath, toPath) {
 
         fsx.copy(fromPath, toPath, function (err) {
             if (err) {
-                // logger.info(`(${ctx.hkey.key})┃  "${path}" Failed creating`), ctx.hkey.key;
+                // logger.info(`(${ctx.hkey.key})  "${path}" Failed creating`), ctx.hkey.key;
                 reject(err);
             } else {
-                logger.info(ctx.hkey.key, `┃ "${fromPath}" copied to "${toPath}"`);
+                logger.info(ctx.hkey.key, `"${fromPath}" copied to "${toPath}"`);
                 resolve();
             }
         });

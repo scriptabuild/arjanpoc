@@ -51,7 +51,7 @@ function execCreateFolder(ctx, path, mask) {
                 } else if (err) {
                     reject(err);
                 } else {
-                    logger.info(hkey.key, `┃ "${path}" created`);
+                    logger.info(hkey.key, `"${path}" created`);
                     resolve(path);
                 }
             });

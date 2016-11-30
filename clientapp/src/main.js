@@ -40,7 +40,11 @@ router
 
 
 var location = window.location;
-var wsProtocol = location.protocol == "http" ? "ws" : "wss";
+// console.log("*** ", location);
+// console.log("*** ", location.protocol);
+// console.log("*** comp to http: ", location.protocol == "http:")
+var wsProtocol = location.protocol == "http:" ? "ws" : "wss";
+// console.log("*** ", wsProtocol);
 var exampleSocket = new WebSocket(`${wsProtocol}://${location.host}`, "protocolOne");
 
 // exampleSocket.onopen = function (event) {
