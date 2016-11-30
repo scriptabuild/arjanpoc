@@ -1,14 +1,38 @@
+const load = require("../dataUtils/load");
 
 module.exports = function getConfig(){
 
-	// TODO: Get configuration from .rc file? better defaults? cmd line args?
-	// TODO: Correctly resolve and combine paths.
-
-	const config = {
-		http: {port: (process.argv.find(a => a.indexOf("http.port:")>=0) || "http.port:80").substr(10)},
-		workingDirectory: (process.argv.find(a => a.indexOf("workingDirectory:")>=0) || "workingDirectory:./scriptabuild_default/workingdirectory").substr(17),
-		projectsConfigurationFile: (process.argv.find(a => a.indexOf("projectsConfigurationFile:")>=0) || "projectsConfigurationFile:./projects").substr(26)
+	const defaultConfig = {
+		http: {port: 80},
+		workingDirectory: "scriptabuild_default/workingdirectory",
+		projectsConfigurationFile: "projects.json"		
 	};
-	console.log("config", config);
-	return config;
+
+	let configFilename = "scriptabuild.json";
+	parseParam("config:", x => configFilename = x);
+	const fileConfig = load.json(configFilename);
+
+	const cliConfig = getCliConfig();
+
+	const resultingConfig = Object.assign({}, defaultConfig, fileConfig, cliConfig);
+
+	console.log("config", resultingConfig);
+	return resultingConfig;
+}
+
+function parseParam(prefix, cb){
+	let x = process.argv.find(a => a.indexOf(prefix)>=0);
+	if(x !== undefined){
+		cb(x.substr(prefix.length));
+	}
+}
+
+function getCliConfig(){
+	const cliConfig = {};
+	
+	parseParam("http.port:", x => cliConfig.http = {port: x});
+	parseParam("workingDirectory:", x => cliConfig.workingDirectory = x);
+	parseParam("projectsConfigurationFile:", x => cliConfig.projectsConfigurationFile = x);
+	
+	return cliConfig;
 }
