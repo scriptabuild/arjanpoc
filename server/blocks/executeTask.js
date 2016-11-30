@@ -81,14 +81,22 @@ function runSpawn(cmd, args, options) {
                 message += data + "\n";
             });
 
-            proc.on('close', code => {
+            proc.on('exit', (code, signal) => {
                 if (code == 0) {
                     logger.info(hkey.key, `┗━━━━ Child process exited with code 0`);
                     resolve(ctx);
-                } else {
+                } else if(code) {
                     logger.error(hkey.key, `┗━━━━ Child process exited with code ${code}`);
                     reject({ name: "ChildProcessError", message, code });
+                } else {
+                    logger.error(hkey.key, `┗━━━━ Child process exited with signal "${signal}"`);
+                    reject({ name: "ChildProcessError", message, code });
                 }
+            });
+
+            proc.on('error', err => {
+                logger.error(hkey.key, `┗━━━━ Child process failed with error ${err.name} ("${err.message}")`);
+                reject({ name: "ChildProcessError", name: err.name, message: err.message });
             });
 
         });
