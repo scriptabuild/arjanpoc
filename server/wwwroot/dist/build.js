@@ -14753,9 +14753,7 @@
 	}).redirect({ "*": "/projects" }).start({}, "body");
 	
 	var location = window.location;
-	
 	var wsProtocol = location.protocol == "http:" ? "ws" : "wss";
-	
 	var exampleSocket = new WebSocket(wsProtocol + "://" + location.host, "protocolOne");
 	
 	exampleSocket.onmessage = function (event) {
@@ -14874,7 +14872,9 @@
 				_vue2.default.set(_this.project, "buildNo", _this.project.buildNo);
 			});
 			_pubsub2.default.on("buildStatusChanged", function (data) {
-				if (data.buildInfo.projectName == _this.$route.params.projectName) {
+				console.log("*** data>", data);
+	
+				if (data.buildInfo.projectname == _this.$route.params.projectName) {
 					_vue2.default.set(_this.project, "buildNo", data.buildInfo.buildNo);
 					_vue2.default.set(_this.project, "buildStatus", data.buildStatus);
 					_vue2.default.set(_this.project, "buildStatusCss", styles[data.buildStatus]);
@@ -15015,7 +15015,7 @@
 	
 	
 	// module
-	exports.push([module.id, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n", ""]);
+	exports.push([module.id, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n", ""]);
 	
 	// exports
 

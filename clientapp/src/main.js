@@ -40,16 +40,9 @@ router
 
 
 var location = window.location;
-// console.log("*** ", location);
-// console.log("*** ", location.protocol);
-// console.log("*** comp to http: ", location.protocol == "http:")
 var wsProtocol = location.protocol == "http:" ? "ws" : "wss";
-// console.log("*** ", wsProtocol);
 var exampleSocket = new WebSocket(`${wsProtocol}://${location.host}`, "protocolOne");
 
-// exampleSocket.onopen = function (event) {
-//   // exampleSocket.send("Here's some text that the server is urgently awaiting!"); 
-// };
  
 exampleSocket.onmessage = function (event) {
   let data = JSON.parse(event.data);

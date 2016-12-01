@@ -30,10 +30,11 @@ const {	getLatestBuildNoSync } = require("./dataUtils/buildNo");
 const {	getBuildSettingsSync } = require("./dataUtils/buildSettings");
 const {	getStatusSync } = require("./dataUtils/status");
 const {	getLogSync } = require("./dataUtils/log");
+const load = require("./dataUtils/load");
 
 const config = getConfig();
-const projects = require(config.projectsConfigurationFile);
-//const projects = load.json(path.resolve(process.cwd(), config.projectsConfigurationFile);
+//const projects = require(config.projectsConfigurationFile);
+const projects = load.json(path.resolve(process.cwd(), config.projectsConfigurationFile));
 
 
 // setup WS application
@@ -73,6 +74,8 @@ app.get("/app/*", function (req, resp) {
 	resp.sendFile(__dirname + "/wwwroot/index.html");
 });
 
+
+
 app.get("/api/project-list",
 	function (req, resp) {
 		results = _(projects)
@@ -91,6 +94,8 @@ app.get("/api/project-list",
 
 		resp.json(results);
 	});
+
+
 
 app.get("/api/project-detail/:projectName",
 	function (req, resp) {
@@ -114,6 +119,8 @@ app.get("/api/project-detail/:projectName",
 		resp.json(projectDetail);
 	});
 
+
+
 app.get("/api/project-log/:projectName/:buildNo?",
 	function (req, resp) {
 		const name = req.params.projectName;
@@ -127,60 +134,39 @@ app.get("/api/project-log/:projectName/:buildNo?",
 		resp.json({ buildNo, log });
 	});
 
-app.post("/api/project-build/:projectName",
+
+
+app.post("/api/project-build/:projectname",
 	function (req, resp) {
-		let projectName = req.params.projectName;
+		let projectname = req.params.projectname;
 
-		// TODO: Trigger the build. Similar to a webhook
 		let pathspec = "HEAD";
+		build(projectname, pathspec);
 
-		let project = projects.find(p => p.name == projectName);
-		let ctx = createBuildContext(config, project);
-
-		let buildInfo = {pathspec, projectName, buildNo: ctx.paths.buildNo};
-
-		wss.broadcast({messageType: "buildStatusChanged", messagePayload:{buildInfo, buildStatus: "running"}});
-
-		Q(ctx)
-			.then(mark.asStarted())
-			.then(git.load(project, pathspec))
-			.then(executeTask(project.run))
-			// .then(log("Copying output files"))
-			// .then(copyFolder("%build%", "%output%/"))
-			.then(log("Scripts completed successfully"))
-			.then(mark.asCompleted())
-			// .then(git.tag( ... ))
-			// .then(git.push( ... ))
-			.then(block(ctx => {
-				wss.broadcast({messageType: "buildStatusChanged", messagePayload:{buildInfo, buildStatus: "ok"}});
-			}))
-			.catch(err => {
-				ctx.logger.error(err);
-				console.error("Scripts failed", err);
-				mark.asFailed()(ctx);
-
-				wss.broadcast({messageType: "buildStatusChanged", messagePayload:{buildInfo, buildStatus: "failed"}});
-			});
-
-		console.log();
-		console.log("*** Starting the build for " + req.params.projectName);
-		resp.send("oki!!!");
+		resp.sendStatus(200);
 	});
 
-app.all("/api/hook/record",
-	grabBody(),
-	// removeContentEncodingHeader(),
-	// bodyparser.text({type: "*/*"}),
+
+
+app.post("/api/hook/bitbucket/",
+	jsonBodyParser(),
 	function (req, resp) {
+		let projectName = req.body.repository.name;
+		let commitHash = req.body.changesets.values[0].toCommit.id;
+		//let author = req.body.changesets.values[0].toCommit.author;
+
+		// TODO: Remove the logging when it is no longer neccessary
 		console.log(req.method, req.path, req.params);
-		console.log(req.headers);
 		console.log(req.body);
 
-		let parentfolder = path.join(config.workingDirectory, "recordings");
-		let buildNo = getLatestBuildNoSync(parentfolder) + 1;
-		let folder = path.join(parentfolder, buildNo.toString());
-		ensureFolderSync(folder);
-		let filename = path.join(folder, "hook-recording.json");
+		let project = projects.find(p => p.name == projectName);
+		if(!project){
+			// TODO: Auto register project in projects.json
+			return resp.sendStatus(404);
+		}
+
+		let ctx = createBuildContext(config, project);
+		let filename = path.join(ctx.paths.sandbox, ctx.paths.buildNo.toString(), "hook-data.json");
 		let fd = fs.openSync(filename, "w");
 		fs.writeSync(fd, JSON.stringify({
 			method: req.method,
@@ -191,50 +177,98 @@ app.all("/api/hook/record",
 		}));
 		fs.close(fd);
 
-		resp.send("oki!!!");
+		build(projectname, commitHash);
+
+		resp.sendStatus(200);
 	});
 
-app.post("/api/hook/bitbucket/:projectName?",
-	removeContentEncodingHeader(), 
-	bodyparser.text({type: "*/*"}),
-	function (req, resp) {
-		let projectName = req.params.projectName;
-		
-		// TODO: Get correct commit and branch, start build process
 
-		// TODO: Remove the logging when it is no longer neccessary
+function build(projectname, pathspec){
+
+	let project = projects.find(p => p.name == projectname);
+	let ctx = createBuildContext(config, project);
+
+	let buildInfo = {pathspec, projectname, buildNo: ctx.paths.buildNo};
+
+	wss.broadcast({messageType: "buildStatusChanged", messagePayload:{buildInfo, buildStatus: "running"}});
+
+	Q(ctx)
+		.then(mark.asStarted())
+		.then(git.load(project, pathspec))
+		.then(executeTask(project.run))
+		// .then(log("Copying output files"))
+		// .then(copyFolder("%build%", "%output%/"))
+		.then(log("Scripts completed successfully"))
+		.then(mark.asCompleted())
+		// .then(git.tag( ... ))
+		// .then(git.push( ... ))
+		.then(block(ctx => {
+			wss.broadcast({messageType: "buildStatusChanged", messagePayload:{buildInfo, buildStatus: "ok"}});
+		}))
+		.catch(err => {
+			ctx.logger.error(err);
+			console.error("Scripts failed", err);
+			mark.asFailed()(ctx);
+
+			wss.broadcast({messageType: "buildStatusChanged", messagePayload:{buildInfo, buildStatus: "failed"}});
+		});
+
+	console.log();
+	console.log("*** Starting the build for " + projectname);
+}
+
+
+
+app.all("/api/hook/record",
+	rawBodyParser(),
+	function (req, resp) {
 		console.log(req.method, req.path, req.params);
+		console.log(req.headers);
 		console.log(req.body);
 
-		let project = projects.find(p => p.name == projectName);
-		let ctx = createBuildContext(config, project);
-		let filename = path.join(ctx.paths.sandbox, ctx.paths.buildNo.toString(), "hook-data.json");
-		let fd = fs.openSync(filename, "w");
+		let parentfolder = path.join(config.workingDirectory, "recordings");
+		let buildNo = getLatestBuildNoSync(parentfolder) + 1;
+		let folder = path.join(parentfolder, buildNo.toString());
+		ensureFolderSync(folder);
+
+		let hookDataFilename = path.join(folder, "hook-data.json");
+		let fd1 = fs.openSync(hookDataFilename, "w");
 		fs.writeSync(fd, JSON.stringify({
 			method: req.method,
 			path: req.path,
 			params: req.params,
+			headers: req.headers,
 			body: req.body
 		}));
-		fs.close(fd);
+		fs.close(fd1);
 
-		resp.send("oki!!!");
+		let requstBodyFilename = path.join(folder, "request-body.txt");
+		let fd2 = fs.openSync(requstBodyFilename, "w");
+		fs.writeSync(fd, req.body);
+		fs.close(fd2);
+
+		resp.sendStatus(200);
 	});
 
-function removeContentEncodingHeader(){
-	return function(req, resp, next) {
-		delete req.headers["Content-Encoding"];
-		next();
-	}
-}
-
-function grabBody(){
+function rawBodyParser(){
 	return function(req, resp, next) {
 		let data = "";
 
 		req.on("data", c => data += c);
 		req.on("end", () => {
 			req.body = data;
+			next();
+		});
+	}
+}
+
+function jsonBodyParser(){
+	return function(req, resp, next) {
+		let data = "";
+
+		req.on("data", c => data += c);
+		req.on("end", () => {
+			req.body = JSON.parse(data);
 			next();
 		});
 	}

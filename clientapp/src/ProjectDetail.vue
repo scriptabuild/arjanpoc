@@ -36,7 +36,9 @@
 					Vue.set(this.project, "buildNo", this.project.buildNo);
 				});
 			pubsub.on("buildStatusChanged", data => {
-				if(data.buildInfo.projectName == this.$route.params.projectName){
+				  console.log("*** data>", data);
+
+				if(data.buildInfo.projectname == this.$route.params.projectName){
 					Vue.set(this.project, "buildNo", data.buildInfo.buildNo);					
 					Vue.set(this.project, "buildStatus", data.buildStatus);					
 					Vue.set(this.project, "buildStatusCss", styles[data.buildStatus]);					

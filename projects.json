@@ -5,11 +5,6 @@
 			"provider": "git",
 			"url": "https://github.com/scriptabuild/arjanpoc"
 		},
-		"pipeline":{
-			"preBuild": "npm update",
-			"build": "npm run ci-task",
-			"postBuild": "npm run deploy"
-		},
 		"run": [
 			"npm update",
 			"npm run ci-task"
