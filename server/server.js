@@ -173,6 +173,7 @@ app.all("/api/hook/record",
 	// bodyparser.text({type: "*/*"}),
 	function (req, resp) {
 		console.log(req.method, req.path, req.params);
+		console.log(req.headers);
 		console.log(req.body);
 
 		let parentfolder = path.join(config.workingDirectory, "recordings");
@@ -185,6 +186,7 @@ app.all("/api/hook/record",
 			method: req.method,
 			path: req.path,
 			params: req.params,
+			headers: req.headers,
 			body: req.body
 		}));
 		fs.close(fd);
