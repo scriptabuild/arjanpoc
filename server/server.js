@@ -167,7 +167,7 @@ app.post("/api/project-build/:projectName",
 		resp.send("oki!!!");
 	});
 
-app.get("/api/hook/record",
+app.all("/api/hook/record",
 	removeContentEncodingHeader(),
 	bodyparser.text({type: "*/*"}),
 	function (req, resp) {
