@@ -167,14 +167,18 @@ app.post("/api/project-build/:projectName",
 		resp.send("oki!!!");
 	});
 
-app.all("/api/hook/record",
-	removeContentEncodingHeader(), 
+app.get("/api/hook/record",
+	removeContentEncodingHeader(),
 	bodyparser.text({type: "*/*"}),
 	function (req, resp) {
 		console.log(req.method, req.path, req.params);
 		console.log(req.body);
 
-		let filename = path.join(config.workingDirectory, "recordings");
+		let parentfolder = path.join(config.workingDirectory, "recordings");
+		let buildNo = getLatestBuildNoSync(parentfolder) + 1;
+		let folder = path.join(parentfolder, buildNo.toString());
+		ensureFolderSync(folder);
+		let filename = path.join(folder, "hook-recording.json");
 		let fd = fs.openSync(filename, "w");
 		fs.writeSync(fd, JSON.stringify({
 			method: req.method,
@@ -217,7 +221,7 @@ app.post("/api/hook/bitbucket/:projectName?",
 function removeContentEncodingHeader(){
 	return function(req, resp, next) {
 		delete req.headers["Content-Encoding"];
-		next(req, resp);
+		next();
 	}
 }
 
@@ -225,7 +229,7 @@ function removeContentEncodingHeader(){
 
 console.log("Starting Scriptabuild");
 ensureFolderSync(path.join(config.workingDirectory, "logs"));
-ensureFolderSync(path.join(config.workingDirectory, "recordings"));
+// ensureFolderSync(path.join(config.workingDirectory, "recordings"));
 
 server.on('request', app);
 server.listen(config.http.port, function () {

@@ -8,17 +8,17 @@ const HKeyGenerator = require("hkey-generator");
 
 
 module.exports = function createBuildContext(config, project) {
-	let sandbox = path.join(config.workingDirectory, "workspaces", escape(project.name));
+	let parentfolder = path.join(config.workingDirectory, "workspaces", escape(project.name));
 
-	let buildNo = getLatestBuildNoSync(sandbox) + 1;
-	let output = path.join(sandbox, buildNo.toString())
+	let buildNo = getLatestBuildNoSync(parentfolder) + 1;
+	let output = path.join(parentfolder, buildNo.toString())
 
 	ensureFolderSync(output);
 
 	let paths = {
-		sandbox,
+		parentfolder,
 		buildNo,
-		build: path.join(sandbox, "build"),
+		build: path.join(parentfolder, "build"),
 		output
 	};
 
