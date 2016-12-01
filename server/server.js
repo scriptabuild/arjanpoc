@@ -33,6 +33,7 @@ const {	getLogSync } = require("./dataUtils/log");
 
 const config = getConfig();
 const projects = require(config.projectsConfigurationFile);
+//const projects = load.json(path.resolve(process.cwd(), config.projectsConfigurationFile);
 
 
 // setup WS application
@@ -63,7 +64,6 @@ const app = express();
 app.use("/app/", express.static(path.join(__dirname, "wwwroot")));
 
 app.use(cors());
-// app.use(cors({ allowedOrigins: "*" }));
 
 app.get("/", function (req, resp) {
 	resp.redirect("/app/projects");
@@ -167,8 +167,29 @@ app.post("/api/project-build/:projectName",
 		resp.send("oki!!!");
 	});
 
-app.all("/api/hook/build/:projectName",
-	bodyparser.json(),
+app.all("/api/hook/record",
+	removeContentEncodingHeader(), 
+	bodyparser.text({type: "*/*"}),
+	function (req, resp) {
+		console.log(req.method, req.path, req.params);
+		console.log(req.body);
+
+		let filename = path.join(config.workingDirectory, "recordings");
+		let fd = fs.openSync(filename, "w");
+		fs.writeSync(fd, JSON.stringify({
+			method: req.method,
+			path: req.path,
+			params: req.params,
+			body: req.body
+		}));
+		fs.close(fd);
+
+		resp.send("oki!!!");
+	});
+
+app.post("/api/hook/bitbucket/:projectName?",
+	removeContentEncodingHeader(), 
+	bodyparser.text({type: "*/*"}),
 	function (req, resp) {
 		let projectName = req.params.projectName;
 		
@@ -193,12 +214,18 @@ app.all("/api/hook/build/:projectName",
 		resp.send("oki!!!");
 	});
 
-
+function removeContentEncodingHeader(){
+	return function(req, resp, next) {
+		delete req.headers["Content-Encoding"];
+		next(req, resp);
+	}
+}
 
 // Server STARTUP code
 
 console.log("Starting Scriptabuild");
 ensureFolderSync(path.join(config.workingDirectory, "logs"));
+ensureFolderSync(path.join(config.workingDirectory, "recordings"));
 
 server.on('request', app);
 server.listen(config.http.port, function () {

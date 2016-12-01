@@ -1,23 +1,27 @@
+const path = require("path");
 const load = require("../dataUtils/load");
 
 module.exports = function getConfig(){
 
 	const defaultConfig = {
 		http: {port: 80},
-		workingDirectory: "scriptabuild_default/workingdirectory",
+		workingDirectory: "./scriptabuild_default/workingdirectory",
 		projectsConfigurationFile: "projects.json"		
 	};
+	console.log("default config:\n", defaultConfig);
 
-	let configFilename = "scriptabuild.json";
+	let configFilename = path.resolve(process.cwd(), "./scriptabuild.json");
 	parseParam("config:", x => configFilename = x);
 	const fileConfig = load.json(configFilename);
+	console.log("file config:\n", fileConfig);
 
 	const cliConfig = getCliConfig();
+	console.log("cli config:\n", cliConfig);
 
-	const resultingConfig = Object.assign({}, defaultConfig, fileConfig, cliConfig);
+	const combinedConfig = Object.assign({}, defaultConfig, fileConfig, cliConfig);
 
-	console.log("config", resultingConfig);
-	return resultingConfig;
+	console.log("combined config:\n", combinedConfig);
+	return combinedConfig;
 }
 
 function parseParam(prefix, cb){
