@@ -168,8 +168,9 @@ app.post("/api/project-build/:projectName",
 	});
 
 app.all("/api/hook/record",
-	removeContentEncodingHeader(),
-	bodyparser.text({type: "*/*"}),
+	grabBody(),
+	// removeContentEncodingHeader(),
+	// bodyparser.text({type: "*/*"}),
 	function (req, resp) {
 		console.log(req.method, req.path, req.params);
 		console.log(req.body);
@@ -222,6 +223,18 @@ function removeContentEncodingHeader(){
 	return function(req, resp, next) {
 		delete req.headers["Content-Encoding"];
 		next();
+	}
+}
+
+function grabBody(){
+	return function(req, resp, next) {
+		let data = "";
+
+		req.on("data", c => data += c);
+		req.on("end", () => {
+			req.body = data;
+			next();
+		});
 	}
 }
 
