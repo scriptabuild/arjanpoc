@@ -7,7 +7,7 @@ const {getLatestBuildNoSync} = require("../dataUtils/buildNo");
 const HKeyGenerator = require("hkey-generator");
 
 
-module.exports = function createBuildContext(config, project) {
+module.exports = function createBuildContext(config, project, pathspec) {
 	let sandbox = path.resolve(process.cwd(), config.workingDirectory, "workspaces", escape(project.name));
 
 	let buildNo = getLatestBuildNoSync(sandbox) + 1;
@@ -25,6 +25,7 @@ module.exports = function createBuildContext(config, project) {
 	let ctx = {
 		hkey: new HKeyGenerator([]),
 		project,
+		pathspec,
 		paths,
 		logger: getLogger(`${output}/log.txt`),
 		transFn: obj => transform(obj, paths, 10)

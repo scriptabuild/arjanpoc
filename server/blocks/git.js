@@ -27,7 +27,7 @@ exports.load = function (project, pathspec = "HEAD") {
 				// true
 				() => Q(childCtx)
 					.then(executeTask({ cmd: "git", args: ['reset', "--hard"], options: { cwd: "%build%" } }))
-					.then(executeTask({ cmd: "git", args: ['pull'], options: { cwd: "%build%" } })),
+					.then(executeTask({ cmd: "git", args: ['fetch'], options: { cwd: "%build%" } })),
 			
 				// false
 				executeTask({ cmd: "git", args: ['clone', project.source.url, "%build%"], options: { cwd: "%sandbox%" } })))

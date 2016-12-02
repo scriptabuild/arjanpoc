@@ -141,6 +141,7 @@ app.post("/api/project-build/:projectname",
 		let projectname = req.params.projectname;
 
 		let pathspec = "HEAD";
+		let branch = config.source.branch;
 		build(projectname, pathspec);
 
 		resp.sendStatus(200);
@@ -186,7 +187,7 @@ app.post("/api/hook/bitbucket/",
 function build(projectname, pathspec){
 
 	let project = projects.find(p => p.name == projectname);
-	let ctx = createBuildContext(config, project);
+	let ctx = createBuildContext(config, project, pathspec);
 
 	let buildInfo = {pathspec, projectname, buildNo: ctx.paths.buildNo};
 
