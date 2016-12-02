@@ -277,7 +277,8 @@ function jsonBodyParser(){
 // Server STARTUP code
 
 console.log("Starting Scriptabuild");
-ensureFolderSync(path.join(config.workingDirectory, "logs"));
+ensureFolderSync(config.workingDirectory);
+// ensureFolderSync(path.join(config.workingDirectory, "logs"));
 // ensureFolderSync(path.join(config.workingDirectory, "recordings"));
 
 server.on('request', app);

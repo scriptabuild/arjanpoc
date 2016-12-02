@@ -5,8 +5,8 @@ module.exports = function getConfig(){
 
 	const defaultConfig = {
 		http: {port: 80},
-		workingDirectory: "./sab_wd",
-		projectsConfigurationFile: "projects.json"		
+		workingDirectory: "./scrab",
+		projectsConfigurationFile: "./projects.json"		
 	};
 	console.log("default config:\n", defaultConfig);
 
