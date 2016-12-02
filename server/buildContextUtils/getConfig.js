@@ -5,7 +5,7 @@ module.exports = function getConfig(){
 
 	const defaultConfig = {
 		http: {port: 80},
-		workingDirectory: "./scriptabuild_default/workingdirectory",
+		workingDirectory: "./sab_wd",
 		projectsConfigurationFile: "projects.json"		
 	};
 	console.log("default config:\n", defaultConfig);
