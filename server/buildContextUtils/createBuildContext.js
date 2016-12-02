@@ -8,7 +8,7 @@ const HKeyGenerator = require("hkey-generator");
 
 
 module.exports = function createBuildContext(config, project) {
-	let sandbox = path.join(config.workingDirectory, "workspaces", escape(project.name));
+	let sandbox = path.resolve(process.cwd(), config.workingDirectory, "workspaces", escape(project.name));
 
 	let buildNo = getLatestBuildNoSync(sandbox) + 1;
 	let output = path.join(sandbox, buildNo.toString())
