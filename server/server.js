@@ -151,7 +151,7 @@ app.post("/api/project-build/:projectname",
 app.post("/api/hook/bitbucket/",
 	jsonBodyParser(),
 	function (req, resp) {
-		let projectName = req.body.repository.name;
+		let projectname = req.body.repository.name;
 		let commitHash = req.body.changesets.values[0].toCommit.id;
 		//let author = req.body.changesets.values[0].toCommit.author;
 
@@ -159,7 +159,7 @@ app.post("/api/hook/bitbucket/",
 		console.log(req.method, req.path, req.params);
 		console.log(req.body);
 
-		let project = projects.find(p => p.name == projectName);
+		let project = projects.find(p => p.name == projectname);
 		if(!project){
 			// TODO: Auto register project in projects.json
 			return resp.sendStatus(404);
