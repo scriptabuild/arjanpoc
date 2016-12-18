@@ -5,7 +5,7 @@ const server = require('http').createServer();
 const url = require('url');
 const WebSocketServer = require('ws').Server;
 const cors = require("cors");
-const bodyparser = require("body-parser");
+const bodyparser = require("@aeinbu/bodyparser");
 
 const _ = require("lodash");
 const Q = require("q");
@@ -25,20 +25,31 @@ const mark = require("./blocks/mark");
 const ensureFolderSync = require("./buildContextUtils/ensureFolderSync");
 const createBuildContext = require("./buildContextUtils/createBuildContext");
 const getConfig = require("./buildContextUtils/getConfig");
-const {	getProjectSandbox } = require("./dataUtils/projectSandbox")
-const {	getLatestBuildNoSync } = require("./dataUtils/buildNo");
-const {	getBuildSettingsSync } = require("./dataUtils/buildSettings");
-const {	getStatusSync } = require("./dataUtils/status");
-const {	getLogSync } = require("./dataUtils/log");
+const {
+	getProjectSandbox
+} = require("./dataUtils/projectSandbox")
+const {
+	getLatestBuildNoSync
+} = require("./dataUtils/buildNo");
+const {
+	getBuildSettingsSync
+} = require("./dataUtils/buildSettings");
+const {
+	getStatusSync
+} = require("./dataUtils/status");
+const {
+	getLogSync
+} = require("./dataUtils/log");
 const load = require("./dataUtils/load");
 
 const config = getConfig();
-//const projects = require(config.projectsConfigurationFile);
 const projects = load.json(path.resolve(process.cwd(), config.projectsConfigurationFile));
 
 
 // setup WS application
-const wss = new WebSocketServer({server});
+const wss = new WebSocketServer({
+	server
+});
 
 wss.on('connection', function connection(ws) {
 	var location = url.parse(ws.upgradeReq.url, true);
@@ -52,10 +63,10 @@ wss.on('connection', function connection(ws) {
 });
 
 wss.broadcast = function broadcast(data) {
-  wss.clients.forEach(function each(client) {
-	console.log("WS send", JSON.stringify(data));
-    client.send(JSON.stringify(data));
-  });
+	wss.clients.forEach(function each(client) {
+		console.log("WS send", JSON.stringify(data));
+		client.send(JSON.stringify(data));
+	});
 };
 
 
@@ -100,7 +111,9 @@ app.get("/api/project-list",
 app.get("/api/project-detail/:projectName",
 	function (req, resp) {
 		const name = req.params.projectName;
-		const project = _(projects).find({ name });
+		const project = _(projects).find({
+			name
+		});
 
 		const projectSandbox = getProjectSandbox(config, project);
 		const buildNo = getLatestBuildNoSync(projectSandbox);
@@ -124,14 +137,19 @@ app.get("/api/project-detail/:projectName",
 app.get("/api/project-log/:projectName/:buildNo?",
 	function (req, resp) {
 		const name = req.params.projectName;
-		const project = _(projects).find({ name });
+		const project = _(projects).find({
+			name
+		});
 
 		const projectSandbox = getProjectSandbox(config, project);
 		const buildNo = req.params.buildNo || getLatestBuildNoSync(projectSandbox);
 
 		const log = getLogSync(projectSandbox, buildNo);
 
-		resp.json({ buildNo, log });
+		resp.json({
+			buildNo,
+			log
+		});
 	});
 
 
@@ -150,7 +168,7 @@ app.post("/api/project-build/:projectname",
 
 
 app.post("/api/hook/bitbucket/",
-	jsonBodyParser(),
+	bodyparser.json(),
 	function (req, resp) {
 		let projectname = req.body.repository.name;
 		let commitHash = req.body.changesets.values[0].toCommit.id;
@@ -161,7 +179,7 @@ app.post("/api/hook/bitbucket/",
 		console.log(req.body);
 
 		let project = projects.find(p => p.name == projectname);
-		if(!project){
+		if (!project) {
 			// TODO: Auto register project in projects.json
 			return resp.sendStatus(404);
 		}
@@ -184,14 +202,24 @@ app.post("/api/hook/bitbucket/",
 	});
 
 
-function build(projectname, pathspec){
+function build(projectname, pathspec) {
 
 	let project = projects.find(p => p.name == projectname);
 	let ctx = createBuildContext(config, project, pathspec);
 
-	let buildInfo = {pathspec, projectname, buildNo: ctx.paths.buildNo};
+	let buildInfo = {
+		pathspec,
+		projectname,
+		buildNo: ctx.paths.buildNo
+	};
 
-	wss.broadcast({messageType: "buildStatusChanged", messagePayload:{buildInfo, buildStatus: "running"}});
+	wss.broadcast({
+		messageType: "buildStatusChanged",
+		messagePayload: {
+			buildInfo,
+			buildStatus: "running"
+		}
+	});
 
 	Q(ctx)
 		.then(mark.asStarted())
@@ -204,14 +232,26 @@ function build(projectname, pathspec){
 		// .then(git.tag( ... ))
 		// .then(git.push( ... ))
 		.then(block(ctx => {
-			wss.broadcast({messageType: "buildStatusChanged", messagePayload:{buildInfo, buildStatus: "ok"}});
+			wss.broadcast({
+				messageType: "buildStatusChanged",
+				messagePayload: {
+					buildInfo,
+					buildStatus: "ok"
+				}
+			});
 		}))
 		.catch(err => {
 			ctx.logger.error(err);
 			console.error("Scripts failed", err);
 			mark.asFailed()(ctx);
 
-			wss.broadcast({messageType: "buildStatusChanged", messagePayload:{buildInfo, buildStatus: "failed"}});
+			wss.broadcast({
+				messageType: "buildStatusChanged",
+				messagePayload: {
+					buildInfo,
+					buildStatus: "failed"
+				}
+			});
 		});
 
 	console.log();
@@ -221,7 +261,7 @@ function build(projectname, pathspec){
 
 
 app.all("/api/hook/record",
-	rawBodyParser(),
+	bodyparser.raw(),
 	function (req, resp) {
 		console.log(req.method, req.path, req.params);
 		console.log(req.headers);
@@ -251,30 +291,6 @@ app.all("/api/hook/record",
 		resp.sendStatus(200);
 	});
 
-function rawBodyParser(){
-	return function(req, resp, next) {
-		let data = "";
-
-		req.on("data", c => data += c);
-		req.on("end", () => {
-			req.body = data;
-			next();
-		});
-	}
-}
-
-function jsonBodyParser(){
-	return function(req, resp, next) {
-		let data = "";
-
-		req.on("data", c => data += c);
-		req.on("end", () => {
-			req.body = JSON.parse(data);
-			next();
-		});
-	}
-}
-
 // Server STARTUP code
 
 console.log("Starting Scriptabuild");
@@ -284,6 +300,5 @@ ensureFolderSync(config.workingDirectory);
 
 server.on('request', app);
 server.listen(config.http.port, function () {
- 	console.log('Scriptabuild http server listening on port ' + server.address().port);
+	console.log('Scriptabuild http server listening on port ' + server.address().port);
 });
-
