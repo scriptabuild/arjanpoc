@@ -26,11 +26,11 @@ router
       name: "project-detail",
       component: ProjectDetail
     },
-    // "/project/:projectName/build/:commitId": {
+    // "/project/:projectName/build/:buildId": {
     //   name: "build-detail",
     //   component: BuildDetail
     // },
-    "/project/:projectName/build/:commitId": {
+    "/project/:projectName/build/:buildId": {
       name: "build-logs",
       component: BuildOutput
     }

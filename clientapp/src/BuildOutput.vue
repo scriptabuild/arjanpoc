@@ -30,7 +30,7 @@
 				});;
 		},
 		methods:{
-			spacify: message => message.replace(" ", "&nbsp;")
+			spacify: message => message.replace(" ", "&nbsp;"),
 		}
 	};
 </script>

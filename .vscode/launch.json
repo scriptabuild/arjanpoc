@@ -9,8 +9,8 @@
 			"stopOnEntry": false,
 			"args": [
 				"http.port:3000",
-				"workingDirectory:/users/arjan/Documents/temp/scriptabuild/",
-				"projectsConfigurationFile:/users/arjan/Documents/dev/scriptabuild/projects.json"
+				"workingDirectory:/users/arjan/temp/scriptabuild/",
+				"projectsConfigurationFile:/users/arjan/dev/scriptabuild/projects.json"
 				],
 			"cwd": "${workspaceRoot}",
 			"preLaunchTask": null,

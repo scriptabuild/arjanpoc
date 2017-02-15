@@ -1,5 +1,6 @@
 const path = require("path");
 const load = require("../dataUtils/load");
+const merge = (...objs) => require("deepmerge").all(objs, {arrayMerge: (arr1, arr2) => arr1.concat(arr2) });
 
 module.exports = function getConfig(){
 
@@ -18,7 +19,9 @@ module.exports = function getConfig(){
 	const cliConfig = getCliConfig();
 	console.log("cli config:\n", cliConfig);
 
+	//const combinedConfig = merge({}, defaultConfig, fileConfig, cliConfig);
 	const combinedConfig = Object.assign({}, defaultConfig, fileConfig, cliConfig);
+
 
 	console.log("combined config:\n", combinedConfig);
 	return combinedConfig;

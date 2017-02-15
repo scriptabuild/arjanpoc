@@ -159,7 +159,7 @@ app.post("/api/project-build/:projectname",
 		let projectname = req.params.projectname;
 
 		let pathspec = "HEAD";
-		let branch = config.source.branch;
+		// let branch = config.source.branch;
 		build(projectname, pathspec);
 
 		resp.sendStatus(200);

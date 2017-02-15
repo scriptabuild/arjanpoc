@@ -4,7 +4,7 @@
 	status: <span class="status {{project.buildStatusCss}}">{{project.buildStatus}}</span><br>
 	<br>
 	<button class="link" v-on:click="click">[Build now]</button><br>
-	<a v-link="{name: 'build-logs', params: {projectName: project.name, buildId: ''}}">[View Log]</a><br>
+	<a v-link="{name: 'build-logs', params: {projectName: project.name, buildId: 'latest'}}">[View Log]</a><br>
 </template>
 
 <script>

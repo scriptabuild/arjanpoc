@@ -1,9 +1,10 @@
 [
 	{
-		"name": "Arjans Proof of Concept of Script-a-build",
+		"name": "Script-a-build",
 		"source": {
 			"provider": "git",
-			"url": "https://github.com/scriptabuild/arjanpoc"
+			"url": "https://github.com/scriptabuild/arjanpoc",
+			"branch": "master"
 		},
 		"run": [
 			"npm update",
@@ -14,7 +15,8 @@
 		"name": "Oktaset CFP Self Service",
 		"source": {
 			"provider": "git",
-			"url": "https://github.com/scriptabuild/samples.git"
+			"url": "https://github.com/scriptabuild/samples.git",
+			"branch": "master"
 		},
 		"run": [
 			{
@@ -35,7 +37,8 @@
 		"name": "Oktaset CFP Admin",
 		"source": {
 			"provider": "git",
-			"url": "https://github.com/scriptabuild/samples.git"
+			"url": "https://github.com/scriptabuild/samples.git",
+			"branch": "master"			
 		},
 		"run": [
 			"npm update",
@@ -46,7 +49,8 @@
 		"name": ".NET Core playground",
 		"source": {
 			"provider": "filesystem",
-			"path": "/users/arjan/Document/dev/oktaset-cfp-admin"
+			"path": "/users/arjan/Document/dev/oktaset-cfp-admin",
+			"branch": "master"
 		},
 		"run": [
 			{
@@ -61,7 +65,8 @@
 		"name": "Built by shell script project",
 		"source": {
 			"provider": "git",
-			"url": "https://github.com/scriptabuild/samples.git"
+			"url": "https://github.com/scriptabuild/samples.git",
+			"branch": "master"
 		},
 		"run": [
 			{
